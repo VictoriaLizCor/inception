@@ -3,3 +3,4 @@
 - [ ] encrypt secrets with ssl
 - [ ] create rules to run containers individually
 - [ ] Include encrypted .env to makefile 
+ 

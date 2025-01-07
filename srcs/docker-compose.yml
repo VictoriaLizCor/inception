@@ -1,25 +1,25 @@
 version: '3.8'
 
 services:
-  nginx:
-    build:
-      context: requirements/nginx
-      dockerfile: Dockerfile
-    container_name: ${CONTAINER_NAME}_nginx
-    ports:
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/config.conf
-    env_file:
-      - .env
-    environment:
-      DOMAIN_NAME: ${DOMAIN_NAME}
-      HOSTNAME: ${HOSTNAME}
-    depends_on:
-      - wordpress
-    networks:
-      - Inception42
-    restart: always
+  # nginx:
+  #   build:
+  #     context: requirements/nginx
+  #     dockerfile: Dockerfile
+  #   container_name: ${CONTAINER_NAME}_nginx
+  #   ports:
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/config.conf
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     DOMAIN_NAME: ${DOMAIN_NAME}
+  #     HOSTNAME: ${HOSTNAME}
+  #   depends_on:
+  #     - wordpress
+  #   networks:
+  #     - Inception42
+  #   restart: always
 # WORDPRESS
 #   wordpress:
 #     build: requirements/wordpress

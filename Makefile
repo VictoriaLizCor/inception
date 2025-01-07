@@ -1,7 +1,7 @@
 
 #------ SRC FILES & DIRECTORIES ------#
 SRCS	:= srcs
-CMD		:= cd $(SRC) && docker compose
+CMD		:= cd $(SRCS) && docker compose
 PROJECT_ROOT:= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../)
 GIT_REPO	:=$(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
 CURRENT		:= $(shell basename $$PWD)
@@ -21,67 +21,76 @@ define createDir
 		printf "\n$(LF)🚧 $(P_BLUE)Creating directory $(P_YELLOW)$(1) $(P_BLUE)and setting permissions$(FG_TEXT)\n"; \
 		mkdir -p $(1); \
 		chmod u+rwx $(1); \
-		printf "$(LF)☑️ $(P_BLUE)Successfully created directory $(P_GREEN)$(1) $(P_BLUE)! ✅$(P_NC)\n"; \
+		printf "$(LF)☑️  $(P_BLUE)Successfully created directory $(P_GREEN)$(1) $(P_BLUE)! ☑️$(P_NC)\n"; \
 	fi
 endef
 
 
 #-------------------- RULES ----------------------------#
-all: build #up
+all: check_os build #up
 
-build: $(VOLUMES)
-	@echo t
-#"$(YELLOW)[*] Phase of building images ...$(RESET)"
-# @docker-compose -f $(path) build
+build: $(VOLUMES) #add_docker_group
+ifneq ($(D), 0)
+	@printf "$(LF)\n$(P_BLUE)☑️  Successfully Created $(P_YELLOW)$(NAME)'s Object files ☑️$(FG_TEXT)\n"
+endif
+	@printf "\n"
+	@printf "$(LF)⚙️ $(P_BLUE) Phase of building images ⚙️\n"
+	@echo $(YELLOW)
+	@printf "Docker compose build $(FG_TEXT) \n\n";
+	@$(CMD) build
+	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built Docker Images! 🐳\n$(P_NC)"
+	@echo $(CYAN) "$$IMG" $(E_NC)
+	@echo "$$MANUAL" $(E_NC)
 
 $(VOLUMES):
 	$(call createDir,$(WP_VOL))
 	$(call createDir,$(DB_VOL))
+
 down:
-	@echo "$(RED)[-] Phase of stopping and deleting containers ...$(RESET)"
-	@docker-compose -f $(path) down -v
+	@printf "$(LF)$(P_RED)[-] Phase of stopping and deleting containers ...$(P_NC)\n"
+	@$(DOCKER_COMPOSE) -f $(path) down -v
 
 up:
-	@echo "$(GREEN)[+] Phase of creating containers ...$(RESET)"
-	@docker-compose -f $(path) up
+	@printf "$(LF)$(D_PURPLE)[+] Phase of creating containers ...$(P_NC)\n"
+	@$(DOCKER_COMPOSE) -f $(path) up
 
 stop:
-	@echo "$(RED)[!] Phase of stopping containers ...$(RESET)"
-	@docker-compose -f $(path) stop
+	@printf "$(LF)$(P_RED)[!] Phase of stopping containers ...$(P_NC)\n"
+	@$(DOCKER_COMPOSE) -f $(path) stop
 
 up_detach:
-	@echo "$(LIGHT_GREEN)[+] Phase of creating containers in detach mode ...$(RESET)"
-	@docker-compose -f $(path) up -d
+	@printf "$(LF)$(P_CCYN)[+] Phase of creating containers in detach mode ...$(P_NC)\n"
+	@$(DOCKER_COMPOSE) -f $(path) up -d
 
 remove_images:
-	@echo "$(RED)[!] Deleting images ...$(RESET)"
+	@printf "$(LF)$(P_RED)[!] Deleting images ...$(P_NC)\n"
 	@docker image rm -f $(shell docker image ls -q)
 
 remove_containers:
-	@echo "$(RED)[!] Forcibly deleting containers ...$(RESET)"
+	@printf "$(LF)$(P_RED)[!] Forcibly deleting containers ...$(P_NC)\n"
 	@docker container rm -f $(shell docker container ls -aq)
 
 remove_volumes:
-	@echo "$(RED)Removing volumes ...$(RESET)"
-	@sudo rm -rf /home/$(shell echo $$USER)/data/database/ /home/$(shell echo $$USER)/data/files
+	@printf "$(LF)$(P_RED)Removing volumes ...$(P_NC)\n"
+	@rm -rf /home/$(shell echo $$USER)/data/database/ /home/$(shell echo $$USER)/data/files
 	@docker volume rm $(shell docker volume ls -q)
 
 remove_networks:
-	@echo "$(RED) Removing networks ...$(RESET)"
+	@printf "$(LF)$(P_RED) Removing networks ...$(P_NC)\n"
 	@docker network rm inception
 
 show:
-	@echo "$(GREEN)[.] List of all running containers$(RESET)"
+	@printf "$(LF)$(D_PURPLE)[.] List of all running containers$(P_NC)\n"
 	@docker container ls
 
 show_all:
-	@echo "$(GREEN)[.] List all running and sleeping containers$(RESET)"
+	@printf "$(LF)$(D_PURPLE)[.] List all running and sleeping containers$(P_NC)\n"
 	@docker container ls -a
-	@echo "$(GREEN)[.] List all images$(RESET)"
+	@printf "$(LF)$(D_PURPLE)[.] List all images$(P_NC)\n"
 	@docker image ls
-	@echo "$(GREEN)[.] List all volumes$(RESET)"
+	@printf "$(LF)$(D_PURPLE)[.] List all volumes$(P_NC)\n"
 	@docker volume ls
-	@echo "$(GREEN)[.] List all networks$(RESET)"
+	@printf "$(LF)$(D_PURPLE)[.] List all networks$(P_NC)\n"
 	@docker network ls
 
 .PHONY: all set build up down clean fclean status logs restart re help show_all
@@ -116,7 +125,7 @@ info:
 	@echo OBJS: $(GRAY) $(OBJS) $(E_NC)
 
 gAdd:
-	@echo $(CYAN) && git add $(PROJECT_ROOT)
+	@echo $(CYAN) && git add .
 gCommit:
 	@echo $(GREEN) && git commit -e ; \
 	ret=$$?; \
@@ -135,27 +144,7 @@ gPush:
 			exit 1; \
 		fi \
 	fi
-git: fclean
-	@if [ -f "$(GIT_REPO)/Makefile" ] && [ -d "$(GIT_REPO)/.git" ]; then \
-		$(MAKE) -C "$(GIT_REPO)" git; \
-	else \
-		$(MAKE) -C "$(PROJECT_ROOT)/$(CURRENT)" cleanAll gAdd gCommit gPush; \
-	fi
-quick: cleanAll
-	@echo $(GREEN) && git commit -am "* Update in files: "; \
-	ret=$$? ; \
-	if [ $$ret -ne 0 ]; then \
-		exit 1; \
-	else \
-		$(MAKE) -C . gPush; \
-	fi
-soft:
-	@if [ -f "$(GIT_REPO)/Makefile" ]; then	\
-		$(MAKE) -C $(GIT_REPO) soft || \
-		if [ $$? -ne 0 ]; then \
-			echo $(RED) GIT_REPO not found $(E_NC); \
-		fi \
-	fi
+git: fclean gAdd gCommit gPush
 
 check_os:
 	@printf "$(LF)$(P_CCYN)⚙️  Checking if the operating system is $(D_PURPLE)Debian:Bullseye...$(FG_TEXT)\n"
@@ -172,6 +161,11 @@ check_os:
 		printf "$(LF)$(P_RED)...❌ The operating system is not Debian:Bullseye! ❌$(P_NC)\n"; \
 		exit 1; \
 	fi
+	echo
+
+add_docker_group:
+	@echo "$(D_PURPLE)[*] Adding user to docker group ...$(P_NC)"
+	@sudo usermod -aG docker $(shell whoami)
 
 # --- DOCKER INSTALL
 install_docker:
