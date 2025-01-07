@@ -30,13 +30,7 @@ endef
 all: check_os build #up
 
 build: $(VOLUMES) #add_docker_group
-ifneq ($(D), 0)
-	@printf "$(LF)\n$(P_BLUE)☑️  Successfully Created $(P_YELLOW)$(NAME)'s Object files ☑️$(FG_TEXT)\n"
-endif
-	@printf "\n"
-	@printf "$(LF)⚙️ $(P_BLUE) Phase of building images ⚙️\n"
-	@echo $(YELLOW)
-	@printf "Docker compose build $(FG_TEXT) \n\n";
+	@printf "$(LF)⚙️ $(P_BLUE) Phase of building images ⚙️\n\n$(P_NC)"
 	@$(CMD) build
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built Docker Images! 🐳\n$(P_NC)"
 	@echo $(CYAN) "$$IMG" $(E_NC)
@@ -152,7 +146,7 @@ check_os:
 		. /etc/os-release; \
 		echo ; \
 		if [ "$$ID" = "debian" ] && [ "$$VERSION_CODENAME" = "bullseye" ]; then \
-			printf "$(LF)$(P_GREEN)...✅ The operating system is Debian:Bullseye! ✅$(P_NC)\n"; \
+			printf "$(LF)$(D_PURPLE)...✅ The operating system is Debian:Bullseye! ✅$(P_NC)\n"; \
 		else \
 			printf "$(LF)$(P_RED)...❌ The operating system is not Debian:Bullseye! ❌$(P_NC)\n"; \
 			exit 1; \
@@ -161,16 +155,17 @@ check_os:
 		printf "$(LF)$(P_RED)...❌ The operating system is not Debian:Bullseye! ❌$(P_NC)\n"; \
 		exit 1; \
 	fi
-	echo
+	@echo
 
 add_docker_group:
 	@echo "$(D_PURPLE)[*] Adding user to docker group ...$(P_NC)"
 	@sudo usermod -aG docker $(shell whoami)
+	@sudo systemctl restart docker
 
 # --- DOCKER INSTALL
 install_docker:
 	@if command -v docker >/dev/null 2>&1; then \
-		printf "$(LF)$(P_GREEN)✅ Docker is already installed! ✅$(P_NC)\n"; \
+		printf "$(LF)$(D_PURPLE)✅ Docker is already installed! ✅$(P_NC)\n"; \
 	else \
 		printf "$(LF)$(P_CCYN)⚙️  Updating package list...$(FG_TEXT)\n"; \
 		sudo apt-get update; \

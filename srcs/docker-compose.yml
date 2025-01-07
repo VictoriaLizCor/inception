@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   # nginx:
@@ -48,17 +47,17 @@ services:
       dockerfile: requirements/mariadb/Dockerfile
     container_name: ${CONTAINER_NAME}_mariadb
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_TCP_PORT: ${MYSQL_TCP_PORT}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_TCP_PORT: ${DB_PORT}
     ports:
-      - "${MYSQL_TCP_PORT}:3306"
+      - "${DB_PORT}:3306"
     volumes:
-      - ${CONTAINER_NAME}_mariadb:/var/lib/mysql
-      - ./srcs/mariadb/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-      - ./srcs/mariadb/config.cnf:/etc/mysql/conf.d/config.cnf
+      - db-vol:/var/lib/mysql
+      - db-vol:/docker-entrypoint-initdb.d
+      - db-vol:/etc/mysql/conf.d/config.cnf
     env_file:
       - .env
     secrets:
@@ -70,19 +69,19 @@ services:
     restart: always
 
 volumes:
-  dataBase:
+  db-vol:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: $DB_VOLUME
+      device: ${DB_VOLUME}
 
-  userData:
+  wp-vol:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: $WP_VOLUME
+      device: ${WP_VOLUME}
 
 
 networks:
