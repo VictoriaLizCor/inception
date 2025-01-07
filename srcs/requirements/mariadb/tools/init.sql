@@ -1,0 +1,7 @@
+CREATE DATABASE IF NOT EXISTS ${DB_NAME};
+CREATE USER '${DB_USER}'@'%' IDENTIFIED BY '$(cat /run/secrets/db_password.txt)';
+GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'%';
+FLUSH PRIVILEGES;
+USE ${DB_NAME};
+CREATE TABLE info (name VARCHAR(255), level INT);
+INSERT INTO info (name, level) VALUES ('${DB_USER}', 6);

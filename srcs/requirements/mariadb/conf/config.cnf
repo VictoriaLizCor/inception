@@ -1,0 +1,6 @@
+[mysqld]
+user=mysql                      # default TODO user/group?
+datadir=/var/lib/mysql          # default
+port=3306                       # default
+socket=/run/mysqld/mysqld.sock  # default
+bind-address=0.0.0.0

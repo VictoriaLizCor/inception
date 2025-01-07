@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  nginx:
+    build:
+      context: requirements/nginx
+      dockerfile: Dockerfile
+    container_name: ${CONTAINER_NAME}_nginx
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/config.conf
+    env_file:
+      - .env
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      HOSTNAME: ${HOSTNAME}
+    depends_on:
+      - wordpress
+    networks:
+      - Inception42
+    restart: always
+# WORDPRESS
+#   wordpress:
+#     build: requirements/wordpress
+#     container_name: ${CONTAINER_NAME}_wordpress
+#     environment:
+#       WORDPRESS_DB_HOST: ${WP_DB_HOST}
+#       WORDPRESS_DB_USER: ${WP_DB_USER}
+#       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+#       WORDPRESS_DB_NAME: ${WP_DB_NAME}
+#       WORDPRESS_TABLE_PREFIX: wp_
+#       WORDPRESS_DEBUG: 1
+#     volumes:
+#       - wp-data:/var/www/html
+#     env_file:
+#       - .env
+#     networks:
+#       - private
+#       - Inception42
+#     depends_on:
+#       - mariadb
+#     restart: always
+
+  mariadb:
+    build:
+      context: .
+      dockerfile: requirements/mariadb/Dockerfile
+    container_name: ${CONTAINER_NAME}_mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_TCP_PORT: ${MYSQL_TCP_PORT}
+    ports:
+      - "${MYSQL_TCP_PORT}:3306"
+    volumes:
+      - ${CONTAINER_NAME}_mariadb:/var/lib/mysql
+      - ./srcs/mariadb/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./srcs/mariadb/config.cnf:/etc/mysql/conf.d/config.cnf
+    env_file:
+      - .env
+    secrets:
+      - db_user_pass
+      - source: db_user_pass
+        target: /db_password.txt
+    networks:
+      - private
+    restart: always
+
+volumes:
+  dataBase:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $DB_VOLUME
+
+  userData:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: $WP_VOLUME
+
+
+networks:
+  Inception42:
+    driver: bridge
+  private:
+
+secrets:
+  db_root_pass:
+    file: ../secrets/db_root_password.txt
+  db_user_pass:
+    file: ../secrets/db_password.txt
+  wp_admin_pass:
+    file: ../secrets/wp_admin_pass.txt
+  wp_user_pass:
+    file: ../secrets/wp_user_pass.txt
+  ftp_user_pass:
+    file: ../secrets/ftp_user_pass.txt
+
+# secrets:
+#   mysql_root_password:
+#     external: true
+#   mysql_password:
+#     external: true
+#   wp_admin_password:
+#     external: true
+#   wp_user_password:
+#     external: true
