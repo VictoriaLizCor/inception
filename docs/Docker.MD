@@ -48,6 +48,21 @@ Here are Docker's key components:
 - `Docker Daemon`: listens for Docker API requests and manages Docker objects such as images, containers, networks, and volumes
 - `Docker namespaces`: Docker uses a technology called namespaces to provide an isolated workspace called a container. when you run a container, Docker creates a set of namespaces for that container. These namespaces provide a layer of isolation namespace and its access is limited to that namespaces.
 
+# What is Docker daemon?
+The Docker daemon (dockerd) is a background service that manages Docker containers, images, networks, and volumes. It listens for Docker API requests and handles the various Docker objects. The daemon is responsible for:
+
+Building and Running Containers: It creates, starts, stops, and removes containers based on user commands or Docker Compose configurations.
+Managing Images: It pulls, builds, tags, and removes Docker images.
+Networking: It sets up and manages Docker networks to allow containers to communicate with each other and with external networks.
+Volumes: It manages Docker volumes for persistent storage.
+The Docker daemon typically runs as a system service and can be controlled using system commands like systemctl on Linux.
+
+To interact with the Docker daemon, you use the Docker CLI (docker command), which sends requests to the daemon via the Docker API.
+
+You can check the status of the Docker daemon with:
+
+And restart it if necessary with:
+
 
 
 ---

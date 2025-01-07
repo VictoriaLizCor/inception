@@ -66,7 +66,7 @@ remove_containers:
 
 remove_volumes:
 	@printf "$(LF)$(P_RED)Removing volumes ...$(P_NC)\n"
-	@rm -rf /home/$(shell echo $$USER)/data/database/ /home/$(shell echo $$USER)/data/files
+	@rm -rf $(VOLUMES)
 	@docker volume rm $(shell docker volume ls -q)
 
 remove_networks:
@@ -77,7 +77,7 @@ show:
 	@printf "$(LF)$(D_PURPLE)[.] List of all running containers$(P_NC)\n"
 	@docker container ls
 
-show_all:
+showAll:
 	@printf "$(LF)$(D_PURPLE)[.] List all running and sleeping containers$(P_NC)\n"
 	@docker container ls -a
 	@printf "$(LF)$(D_PURPLE)[.] List all images$(P_NC)\n"
@@ -89,7 +89,15 @@ show_all:
 
 .PHONY: all set build up down clean fclean status logs restart re help show_all
 
-clean:
+clean_all:
+	-@docker stop $(shell docker ps -qa)
+	-@docker rm $(shell docker ps -qa)
+	@docker image prune -a -f
+	-@docker rmi -f $(shell docker images -qa) || true
+	-@docker volume rm $(shell docker volume ls -q)
+	-@docker network rm $(shell docker network ls -q) 2>/dev/null
+
+clean: clean_all
 	@echo;
 	@if [ -d "$(VOLUMES)" ]; then	\
 		rm -rf $(VOLUMES); 		\
@@ -110,13 +118,15 @@ fclean: clean
 re: fclean all
 
 
-# #-------------------- GIT UTILS ----------------------------#
 info:
 	@echo GIT_REPO:  $(CYAN) $(GIT_REPO) $(E_NC)
 	@echo PROJECT_ROOT: $(CYAN) $(PROJECT_ROOT) $(E_NC)
 	@echo CURRENT: $(GREEN) $(CURRENT) $(E_NC)
 	@echo SRC: $(YELLOW) $(SRC) $(E_NC)
 	@echo OBJS: $(GRAY) $(OBJS) $(E_NC)
+watch:
+	@watch -n 1 ls -Rla $$HOME/data
+# #-------------------- GIT UTILS ----------------------------#
 
 gAdd:
 	@echo $(CYAN) && git add .
