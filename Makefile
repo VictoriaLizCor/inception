@@ -222,6 +222,8 @@ showData:
 encrypt:
 	@read -p "Please enter some input: " user_input; \
 	openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env -out srcs/.env.enc -k $$user_input
+rm-secrets:
+	@rm -rf ./secrets
 #--------------------COLORS----------------------------#
 # For print
 CL_BOLD  = \e[1m

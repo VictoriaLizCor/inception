@@ -3,4 +3,4 @@
 - [ ] encrypt secrets with ssl
 - [ ] create rules to run containers individually
 - [ ] Include encrypted .env to makefile 
- 
+- [ ] Add rule to docker compose like health to check data base after creation

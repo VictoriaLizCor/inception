@@ -50,10 +50,10 @@ services:
       - source: mariadbConfig
         target: /etc/mysql/mariadb.conf.d/config.cnf
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_pass
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD_FILE: /run/secrets/db_user_pass
       MYSQL_TCP_PORT: ${DB_PORT}
     ports:
       - "${DB_PORT}:3306"
@@ -107,6 +107,8 @@ secrets:
     file: ../secrets/wp_user_pass.txt
   ftp_user_pass:
     file: ../secrets/ftp_user_pass.txt
+  credentials:
+    file: ../secrets/credentials.txt
 
 #  configs:
 #    mariadbConfig:

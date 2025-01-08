@@ -4,7 +4,8 @@ FROM debian:bullseye
 RUN apt-get update -qq && \
 	apt-get install -y -qq mariadb-server mariadb-client curl && \
 	mkdir -p /var/lib/mysql /run/mysqld && \
-	chown -R mysql:mysql /var/lib/mysql /run/mysqld
+	chown -R mysql:mysql /var/lib/mysql /run/mysqld /run/secrets && \
+	chmod 700 /run/secrets
  
 	# if ! getent group mysql > /dev/null; then groupadd -r mysql; fi && \
 	# if ! getent passwd mysql > /dev/null; then useradd -r -g mysql mysql; fi && \

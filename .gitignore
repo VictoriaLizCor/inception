@@ -2,3 +2,4 @@
 .env.tmp
 .env
 .settings
+secrets/
