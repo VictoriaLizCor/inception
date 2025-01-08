@@ -46,6 +46,9 @@ services:
       context: ./requirements/mariadb
       dockerfile: Dockerfile
     container_name: ${CONTAINER_NAME}_mariadb
+    configs:
+      - source: mariadbConfig
+        target: /etc/mysql/mariadb.conf.d/config.cnf
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -61,7 +64,7 @@ services:
     secrets:
       - db_user_pass
       - source: db_user_pass
-        target: /db_password.txt
+        target: /run/secrets/db_root_pass
     networks:
       - private
     restart: always
@@ -89,7 +92,10 @@ networks:
     name: Inception42
     driver: bridge
   private:
-
+    # ipam:
+    #   config:
+    #     - subnet: "10.0.0.0/19"
+    #       gateway: "10.0.0.1"
 secrets:
   db_root_pass:
     file: ../secrets/db_root_password.txt
@@ -102,12 +108,8 @@ secrets:
   ftp_user_pass:
     file: ../secrets/ftp_user_pass.txt
 
-# secrets:
-#   mysql_root_password:
-#     external: true
-#   mysql_password:
-#     external: true
-#   wp_admin_password:
-#     external: true
-#   wp_user_password:
-#     external: true
+#  configs:
+#    mariadbConfig:
+#      file: ./requirements/mariadb/conf/config.cnf
+
+

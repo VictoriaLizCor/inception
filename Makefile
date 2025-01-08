@@ -12,7 +12,13 @@ MDB			:= $(SRCS)/requirements/mariadb
 WP			:= $(SRCS)/requirements/wordpress
 NG			:= $(SRCS)/requirements/nginx
 
-#docker stop $(docker ps -qa); docker rm $(docker ps -qa); docker rmi -f $(docker images -qa); docker volume rm $(docker volume ls -q); docker network rm $(docker network ls -q) 2>/dev/null
+check_host:
+	@ if ! grep -q "127.0.0.1 antoda-s.42.fr" /etc/hosts; then \
+		echo "Creating host entry..."; \
+		echo "127.0.0.1 antoda-s.42.fr" | sudo tee -a /etc/hosts; \
+	else \
+		echo "Host entry already exists."; \
+	fi
 
 define createDir
 	@if [ -d "$(1)" ]; then \
@@ -213,6 +219,9 @@ cpy:
 	@scp -r ./* Debian:inception
 showData:
 	-@sudo ls ~/data/mariadb/ -Rla
+encrypt:
+	@read -p "Please enter some input: " user_input; \
+	openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env -out srcs/.env.enc -k $$user_input
 #--------------------COLORS----------------------------#
 # For print
 CL_BOLD  = \e[1m

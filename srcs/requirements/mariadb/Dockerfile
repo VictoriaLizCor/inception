@@ -20,4 +20,5 @@ EXPOSE 3306
 
 USER mysql
 
-CMD ["mysqld_safe", "--init-file=/docker-entrypoint-initdb.d/init_db.sql"]
+CMD ["mysqld_safe"]
+# CMD ["mysqld_safe", "--init-file=/docker-entrypoint-initdb.d/init_db.sql"]

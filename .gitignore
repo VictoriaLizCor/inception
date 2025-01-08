@@ -1,3 +1,4 @@
 #ignore Enviroment variables
+.env.tmp
 .env
 .settings
