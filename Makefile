@@ -27,11 +27,12 @@ endef
 
 
 #-------------------- RULES ----------------------------#
-all: check_os build #up
+all: check_os build up showAll#up
 
 build: $(VOLUMES) #add_docker_group
-	@printf "$(LF)⚙️ $(P_BLUE) Phase of building images ⚙️\n\n$(P_NC)"
-	@$(CMD) build
+	@printf "\n$(LF)⚙️ $(P_BLUE) Phase of building images ⚙️\n\n$(P_NC)"
+	@$(CMD) build 
+#--no-cache
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built Docker Images! 🐳\n$(P_NC)"
 	@echo $(CYAN) "$$IMG" $(E_NC)
 	@echo "$$MANUAL" $(E_NC)
@@ -42,65 +43,77 @@ $(VOLUMES):
 
 down:
 	@printf "$(LF)$(P_RED)[-] Phase of stopping and deleting containers ...$(P_NC)\n"
-	@$(DOCKER_COMPOSE) -f $(path) down -v
+	@$(CMD) down -v
 
 up:
 	@printf "$(LF)$(D_PURPLE)[+] Phase of creating containers ...$(P_NC)\n"
-	@$(DOCKER_COMPOSE) -f $(path) up
+	@$(CMD) up -d
 
 stop:
 	@printf "$(LF)$(P_RED)[!] Phase of stopping containers ...$(P_NC)\n"
-	@$(DOCKER_COMPOSE) -f $(path) stop
+	@if [ -n "$$($(CMD) ps -q)" ]; then \
+		$(CMD) stop; \
+	else \
+		printf "$(LF)$(P_YELLOW)No running containers to stop.$(P_NC)\n"; \
+	fi
 
 up_detach:
 	@printf "$(LF)$(P_CCYN)[+] Phase of creating containers in detach mode ...$(P_NC)\n"
-	@$(DOCKER_COMPOSE) -f $(path) up -d
+	@$(CMD) up -d
 
 remove_images:
 	@printf "$(LF)$(P_RED)[!] Deleting images ...$(P_NC)\n"
-	@docker image rm -f $(shell docker image ls -q)
+	@if [ -n "$$(docker image ls -q)" ]; then \
+		docker image rm -f $$(docker image ls -q); \
+	else \
+		printf "$(LF)$(P_YELLOW)No images to remove.$(P_NC)\n"; \
+	fi
 
 remove_containers:
-	@printf "$(LF)$(P_RED)[!] Forcibly deleting containers ...$(P_NC)\n"
-	@docker container rm -f $(shell docker container ls -aq)
+	@printf "$(LF)$(P_RED)[!] Deleting containers ...$(P_NC)\n"
+	@if [ -n "$$(docker container ls -aq)" ]; then \
+		docker container rm -f $$(docker container ls -aq); \
+	else \
+		printf "$(LF)$(P_YELLOW)No containers to remove.$(P_NC)\n"; \
+	fi
 
 remove_volumes:
-	@printf "$(LF)$(P_RED)Removing volumes ...$(P_NC)\n"
-	@rm -rf $(VOLUMES)
-	@docker volume rm $(shell docker volume ls -q)
+	@printf "$(LF)$(P_RED)[!] Removing volumes ...$(P_NC)\n"
+	@sudo rm -rf $(VOLUMES)
+	@if [ -n "$$(docker volume ls -q)" ]; then \
+		docker volume rm $$(docker volume ls -q); \
+	else \
+		printf "$(LF)$(P_YELLOW)No volumes to remove.$(P_NC)\n"; \
+	fi
 
 remove_networks:
-	@printf "$(LF)$(P_RED) Removing networks ...$(P_NC)\n"
-	@docker network rm inception
+	@printf "$(LF)$(P_RED)[!] Removing networks ...$(P_NC)\n"
+	-@docker network rm $(shell docker network ls -q) 2>/dev/null
+
+prune:
+	@docker image prune -a -f
 
 show:
-	@printf "$(LF)$(D_PURPLE)[.] List of all running containers$(P_NC)\n"
+	@printf "$(LF)$(D_PURPLE)* List of all running containers$(P_NC)\n"
 	@docker container ls
 
 showAll:
-	@printf "$(LF)$(D_PURPLE)[.] List all running and sleeping containers$(P_NC)\n"
+	@printf "$(LF)$(D_PURPLE)* List all running and sleeping containers$(P_NC)\n"
 	@docker container ls -a
-	@printf "$(LF)$(D_PURPLE)[.] List all images$(P_NC)\n"
+	@printf "$(LF)$(D_PURPLE)* List all images$(P_NC)\n"
 	@docker image ls
-	@printf "$(LF)$(D_PURPLE)[.] List all volumes$(P_NC)\n"
+	@printf "$(LF)$(D_PURPLE)* List all volumes$(P_NC)\n"
 	@docker volume ls
-	@printf "$(LF)$(D_PURPLE)[.] List all networks$(P_NC)\n"
+	@printf "$(LF)$(D_PURPLE)* List all networks$(P_NC)\n"
 	@docker network ls
 
 .PHONY: all set build up down clean fclean status logs restart re help show_all
 
-clean_all:
-	-@docker stop $(shell docker ps -qa)
-	-@docker rm $(shell docker ps -qa)
-	@docker image prune -a -f
-	-@docker rmi -f $(shell docker images -qa) || true
-	-@docker volume rm $(shell docker volume ls -q)
-	-@docker network rm $(shell docker network ls -q) 2>/dev/null
 
-clean: clean_all
-	@echo;
-	@if [ -d "$(VOLUMES)" ]; then	\
-		rm -rf $(VOLUMES); 		\
+clean: stop remove_containers remove_volumes prune remove_networks
+	@echo 
+	-@if [ -d "$(VOLUMES)" ]; then	\
+		sudo rm -rf $(VOLUMES);		\
 		printf "$(LF)🧹 $(P_RED) Clean $(P_YELLOW)$(NAME)'s Volume files$(P_NC)\n"; \
 	fi
 	@printf  "\n$(P_NC)"
@@ -108,7 +121,6 @@ clean: clean_all
 fclean: clean
 	@if [ -f $(NAME) ]; then	\
 		printf "$(LF)🧹 $(P_RED) Clean $(P_GREEN) $(CURRENT)/$(NAME)\n";	\
-		rm -rf $(NAME);														\
 		echo $(WHITE) "$$TRASH" $(E_NC);									\
 	else																	\
 		printf "$(LF)🧹$(P_RED) Clean $(P_GREEN) $(CURRENT)\n";			\
@@ -199,6 +211,8 @@ install_docker:
 	fi
 cpy:
 	@scp -r ./* Debian:inception
+showData:
+	-@sudo ls ~/data/mariadb/ -Rla
 #--------------------COLORS----------------------------#
 # For print
 CL_BOLD  = \e[1m

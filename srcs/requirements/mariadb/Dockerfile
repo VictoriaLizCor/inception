@@ -1,31 +1,23 @@
 FROM debian:bullseye
 
-# Set the locale
-RUN apt-get update -qq && apt-get install -y -qq locales apt-utils
-RUN locale-gen en_US.UTF-8
-RUN locale-gen de_DE.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL=en_US.UTF-8
-
-# Install MariaDB server, MariaDB client, and curl quietly if not already installed
-RUN dpkg -l | grep -qw mariadb-server || apt-get install -y -qq mariadb-server
-RUN dpkg -l | grep -qw mariadb-client || apt-get install -y -qq mariadb-client
-RUN dpkg -l | grep -qw curl || apt-get install -y -qq curl
-
-# Create necessary directories and set permissions
-RUN mkdir -p /var/lib/mysql && chown -R mysql:mysql /var/lib/mysql
+# Install MariaDB server, MariaDB client, and curl quietly
+RUN apt-get update -qq && \
+	apt-get install -y -qq mariadb-server mariadb-client curl && \
+	mkdir -p /var/lib/mysql /run/mysqld && \
+	chown -R mysql:mysql /var/lib/mysql /run/mysqld
+ 
+	# if ! getent group mysql > /dev/null; then groupadd -r mysql; fi && \
+	# if ! getent passwd mysql > /dev/null; then useradd -r -g mysql mysql; fi && \
 
 # Copy custom MariaDB configuration
-COPY ./conf/config.cnf  /etc/mysql/mariadb.conf.d/config.cnf
-
-# Copy initialization script
+COPY ./conf/config.cnf /etc/mysql/mariadb.conf.d/config.cnf
 COPY ./tools/init.sql /docker-entrypoint-initdb.d/init.sql
 
+# Initialize the MariaDB data directory
+RUN mysql_install_db --user=mysql --datadir=/var/lib/mysql
 
 EXPOSE 3306
 
-RUN echo -e "\e[32mInstallation and setup complete!\e[0m"
+USER mysql
 
-CMD ["mysqld_safe"]
-
+CMD ["mysqld_safe", "--init-file=/docker-entrypoint-initdb.d/init_db.sql"]

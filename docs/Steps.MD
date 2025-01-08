@@ -561,3 +561,78 @@ sshd_config
    ```
 
 This setup will allow you to run Firefox on the remote machine and display it on your local machine via SSH with X11 forwarding.
+
+# Avoid softlock down
+
+This can be useful in preventing the system from becoming unresponsive for extended periods. However, this should be done with caution, as it can lead to data loss or other issues.
+
+### **Configuring Automatic Shutdown on Soft Lockup**
+
+To achieve this, you can use a combination of a kernel parameter and a watchdog timer.
+
+### **Step 1: Enable Panic on Soft Lockup**
+
+You can configure the kernel to panic (which can then trigger a shutdown) when a soft lockup is detected by setting the `kernel.softlockup_panic` parameter to 1. This can be done by adding it to your boot loader configuration (e.g., GRUB).
+
+1. **Edit GRUB Configuration:**
+
+   Open the GRUB configuration file for editing:
+
+   ```bash
+   sudo nano /etc/default/grub
+   ```
+
+2. **Add the Kernel Parameter:**
+
+   Find the line that starts with `GRUB_CMDLINE_LINUX_DEFAULT` and add `kernel.softlockup_panic=1` to the list of parameters:
+
+   ```bash
+   GRUB_CMDLINE_LINUX_DEFAULT="quiet splash kernel.softlockup_panic=1"
+   ```
+
+3. **Update GRUB:**
+
+   Save the file and update GRUB:
+
+   ```bash
+   sudo update-grub
+   ```
+
+### **Step 2: Configure Watchdog Timer**
+
+The watchdog timer can be used to automatically reboot the system when it detects that the system has become unresponsive.
+
+1. **Install the Watchdog Package:**
+
+   ```bash
+   sudo apt-get install watchdog
+   ```
+
+2. **Configure the Watchdog Service:**
+
+   Edit the watchdog configuration file:
+
+   ```bash
+   sudo nano /etc/watchdog.conf
+   ```
+
+   Uncomment and set the following parameters as needed:
+
+   ```conf
+   max-load-1 = 24
+   watchdog-device = /dev/watchdog
+   watchdog-timeout = 60
+   ```
+
+3. **Enable and Start the Watchdog Service:**
+
+   ```bash
+   sudo systemctl enable watchdog
+   sudo systemctl start watchdog
+   ```
+
+### **Step 3: Verify Configuration**
+
+After making these changes, reboot your system to apply the new settings. The watchdog service should now monitor your system and trigger a reboot if it becomes unresponsive.
+
+If you have any specific requirements or need further assistance with the setup, feel free to ask!
