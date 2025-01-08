@@ -12,13 +12,6 @@ MDB			:= $(SRCS)/requirements/mariadb
 WP			:= $(SRCS)/requirements/wordpress
 NG			:= $(SRCS)/requirements/nginx
 
-check_host:
-	@ if ! grep -q "127.0.0.1 antoda-s.42.fr" /etc/hosts; then \
-		echo "Creating host entry..."; \
-		echo "127.0.0.1 antoda-s.42.fr" | sudo tee -a /etc/hosts; \
-	else \
-		echo "Host entry already exists."; \
-	fi
 
 define createDir
 	@if [ -d "$(1)" ]; then \
@@ -33,9 +26,9 @@ endef
 
 
 #-------------------- RULES ----------------------------#
-all: check_os build up showAll#up
+all: build up showAll#up
 
-build: $(VOLUMES) #add_docker_group
+build: check_os check_host $(VOLUMES) secrets #add_docker_group
 	@printf "\n$(LF)⚙️ $(P_BLUE) Phase of building images ⚙️\n\n$(P_NC)"
 	@$(CMD) build 
 #--no-cache
@@ -46,6 +39,7 @@ build: $(VOLUMES) #add_docker_group
 $(VOLUMES):
 	$(call createDir,$(WP_VOL))
 	$(call createDir,$(DB_VOL))
+	sleep 1
 
 down:
 	@printf "$(LF)$(P_RED)[-] Phase of stopping and deleting containers ...$(P_NC)\n"
@@ -113,7 +107,7 @@ showAll:
 	@printf "$(LF)$(D_PURPLE)* List all networks$(P_NC)\n"
 	@docker network ls
 
-.PHONY: all set build up down clean fclean status logs restart re help show_all
+.PHONY: all set build up down clean fclean status logs restart re showAll secrets
 
 
 clean: stop remove_containers remove_volumes prune remove_networks
@@ -135,6 +129,13 @@ fclean: clean
 
 re: fclean all
 
+check_host:
+	@ if ! grep -q "127.0.0.1 ${USER}.42.fr" /etc/hosts; then \
+		echo "Creating host entry..."; \
+		echo "127.0.0.1 ${USER}.42.fr" | sudo tee -a /etc/hosts; \
+	else \
+		echo "Host entry already exists."; \
+	fi
 
 info:
 	@echo GIT_REPO:  $(CYAN) $(GIT_REPO) $(E_NC)
@@ -224,6 +225,11 @@ encrypt:
 	openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env -out srcs/.env.enc -k $$user_input
 rm-secrets:
 	@rm -rf ./secrets
+	@rm -rf $(SRCS)/.env
+secrets:
+	@chmod +x generateSecrets.sh
+	@$(call createDir,./secrets)
+	@bash generateSecrets.sh
 #--------------------COLORS----------------------------#
 # For print
 CL_BOLD  = \e[1m

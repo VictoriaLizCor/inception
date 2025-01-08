@@ -46,9 +46,9 @@ services:
       context: ./requirements/mariadb
       dockerfile: Dockerfile
     container_name: ${CONTAINER_NAME}_mariadb
-    configs:
-      - source: mariadbConfig
-        target: /etc/mysql/mariadb.conf.d/config.cnf
+    # configs:
+    #   - source: mariadbConfig
+    #     target: /etc/mysql/mariadb.conf.d/config.cnf
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_pass
       MYSQL_DATABASE: ${DB_NAME}
