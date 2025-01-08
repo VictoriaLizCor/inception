@@ -110,7 +110,7 @@ showAll:
 .PHONY: all set build up down clean fclean status logs restart re showAll secrets
 
 
-clean: stop remove_containers remove_volumes prune remove_networks
+clean: stop remove_containers remove_volumes prune remove_networks rm-secrets
 	@echo 
 	-@if [ -d "$(VOLUMES)" ]; then	\
 		sudo rm -rf $(VOLUMES);		\
