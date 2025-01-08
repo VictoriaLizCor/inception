@@ -39,7 +39,7 @@ build: check_os check_host $(VOLUMES) secrets #add_docker_group
 $(VOLUMES):
 	$(call createDir,$(WP_VOL))
 	$(call createDir,$(DB_VOL))
-	sleep 1
+
 
 down:
 	@printf "$(LF)$(P_RED)[-] Phase of stopping and deleting containers ...$(P_NC)\n"
