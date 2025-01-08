@@ -89,7 +89,7 @@ volumes:
 
 networks:
   Inception42:
-    name: Inception42
+    name: ${NETWORK_NAME}
     driver: bridge
   private:
     # ipam:
