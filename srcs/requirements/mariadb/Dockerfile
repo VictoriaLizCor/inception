@@ -2,10 +2,11 @@ FROM debian:bullseye
 
 # Install MariaDB server, MariaDB client, and curl quietly
 RUN apt-get update -qq && \
-	apt-get install -y -qq mariadb-server mariadb-client curl && \
+	apt-get install -y -qq --no-install-recommends mariadb-server mariadb-client curl && \
 	mkdir -p /var/lib/mysql /run/mysqld /run/secrets && \
-	chown -R mysql:mysql /var/lib/mysql /run/mysqld /run/secrets
- 
+	chown -R mysql:mysql /var/lib/mysql /run/mysqld /run/secrets && \
+	rm -rf /var/lib/apt/lists/*
+
 	# if ! getent group mysql > /dev/null; then groupadd -r mysql; fi && \
 	# if ! getent passwd mysql > /dev/null; then useradd -r -g mysql mysql; fi && \
 

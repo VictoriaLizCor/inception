@@ -1,5 +1,19 @@
-# #-------------------- GIT UTILS ----------------------------#
 
+all:
+show:
+	@printf "$(LF)$(D_PURPLE)* List of all running containers$(P_NC)\n"
+	@docker container ls
+
+showAll:
+	@printf "$(LF)$(D_PURPLE)* List all running and sleeping containers$(P_NC)\n"
+	@docker container ls -a
+	@printf "$(LF)$(D_PURPLE)* List all images$(P_NC)\n"
+	@docker image ls
+	@printf "$(LF)$(D_PURPLE)* List all volumes$(P_NC)\n"
+	@docker volume ls
+	@printf "$(LF)$(D_PURPLE)* List all networks$(P_NC)\n"
+	@docker network ls
+# #-------------------- GIT UTILS ----------------------------#
 gAdd:
 	@echo $(CYAN) && git add .
 gCommit:
@@ -22,22 +36,15 @@ gPush:
 	fi
 git: fclean gAdd gCommit gPush
 
+# #-------------------- Check OS dependencies ----------------------#
 check_os:
-	@printf "\n$(LF)$(P_CCYN)🚧  Checking if the operating system is $(D_PURPLE)Debian:Bullseye...$(FG_TEXT)\n"
-	@if [ -f /etc/os-release ]; then \
-		. /etc/os-release; \
-		echo ; \
-		if [ "$$ID" = "debian" ] && [ "$$VERSION_CODENAME" = "bullseye" ]; then \
-			printf "$(LF)$(D_PURPLE)🏁  The operating system is Debian:Bullseye! $(P_NC)\n"; \
-		else \
-			printf "$(LF)$(P_RED)...❌ The operating system is not Debian:Bullseye! ❌$(P_NC)\n"; \
-			exit 1; \
-		fi \
+	@printf "\n$(LF)$(P_CCYN)🚧  Checking if the operating system is $(D_PURPLE)Debian:Bullseye...$(FG_TEXT)"
+	@if hostnamectl | grep -q "Operating System: Debian GNU/Linux 11 (bullseye)"; then \
+		printf "$(LF)$(D_PURPLE)🏁  The operating system is Debian:Bullseye! $(P_NC)\n"; \
 	else \
-		printf "$(LF)$(P_RED)...❌ The operating system is not Debian:Bullseye! ❌$(P_NC)\n\n"; \
+		printf "$(LF)$(P_RED)...❌ The operating system is not Debian:Bullseye! ❌$(P_NC)\n"; \
 		exit 1; \
 	fi
-	@echo
 
 add_docker_group:
 	@echo "$(D_PURPLE)[*] Adding user to docker group ...$(P_NC)"
@@ -48,7 +55,7 @@ encrypt:
 	@read -p "Please enter some input: " user_input; \
 	openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env -out srcs/.env.enc -k $$user_input
 
-# --- DOCKER INSTALL
+# #-------------------- DOCKER isntall ----------------------------#
 install_docker:
 	@if command -v docker >/dev/null 2>&1; then \
 		printf "$(LF)$(D_PURPLE)🟢  Docker is already installed! $(P_NC)\n"; \
@@ -73,27 +80,23 @@ install_docker:
 		sudo apt-get install -y docker-ce docker-ce-cli containerd.io; \
 		printf "$(LF)$(P_GREEN)✅ Successfully installed Docker! ✅$(P_NC)\n"; \
 	fi
-
-
+# copy files from local machine to VM with ssh
 cpy:
 	@scp -r ./* Debian:inception
 
 check_host:
-	@if grep -q "127.0.0.1 ${USER}.42.fr" /etc/hosts; then \
+	@if grep -q "127.0.0.1 ${USER}.42.fr" /etc/hosts ; then \
 		printf "$(LF)🟢 $(P_BLUE)Host entry for $(P_YELLOW)${USER}.42.fr $(P_BLUE)already exists$(FG_TEXT)\n\n"; \
 	else \
-		printf "\n$(LF)🚧  $(P_BLUE)Creating host entry for $(P_YELLOW)${USER}.42.fr$(P_BLUE)$(FG_TEXT)\n"; \
-		echo "127.0.0.1 ${USER}.42.fr" | sudo tee -a /etc/hosts; \
-		printf "\n$(LF)✅  $(P_BLUE)Successfully created host entry for $(P_GREEN)${USER}.42.fr$(P_BLUE)! $(P_NC)\n\n"; \
+		printf "$(LF)🚧  $(P_BLUE)Creating host entry for $(P_YELLOW)${USER}.42.fr$(P_BLUE)$(FG_TEXT)\n"; \
+		echo "127.0.0.1 ${USER}.42.fr" | sudo tee -a /etc/hosts > /dev/null; \
+		printf "\n$(LF)🟢  $(P_BLUE)Successfully created host entry for $(P_GREEN)${USER}.42.fr$(P_BLUE)! $(P_NC)\n\n"; \
 	fi
 
 clean_host:
 	@if grep -q "127.0.0.1 ${USER}.42.fr" /etc/hosts; then \
-		printf "\n$(LF)🚧  $(P_BLUE)Removing host entry for $(P_YELLOW)${USER}.42.fr$(P_BLUE)$(FG_TEXT)\n"; \
+		printf "$(LF)$(P_RED)  ❗  Removing host entry for $(P_YELLOW)${USER}.42.fr$(P_BLUE)$(FG_TEXT)"; \
 		sudo sed -i "/127.0.0.1 ${USER}.42.fr/d" /etc/hosts; \
-		printf "\n$(LF)✅  $(P_BLUE)Successfully removed host entry for $(P_GREEN)${USER}.42.fr$(P_BLUE)! $(P_NC)\n\n"; \
-	else \
-		printf "$(LF)❌ $(P_BLUE)Host entry for $(P_YELLOW)${USER}.42.fr $(P_BLUE)does not exist$(FG_TEXT)\n\n"; \
 	fi
 
 info:
@@ -107,13 +110,13 @@ watch:
 	@watch -n 1 ls -la $$HOME/data
 
 define createDir
-	@if [ -d "$(1)" ]; then \
-		printf "$(LF)🟢 $(P_BLUE)Directory $(P_YELLOW)$(1) $(P_BLUE)already exists$(FG_TEXT)\n\n"; \
+	@printf "\n$(LF)🚧  $(P_BLUE)Creating directory $(P_YELLOW)$(1) $(FG_TEXT)"; \
+	if [ -d "$(1)" ]; then \
+		printf "$(LF)  🟢 $(P_BLUE)Directory $(P_YELLOW)$(1) $(P_BLUE)already exists$(FG_TEXT)"; \
 	else \
-		printf "\n$(LF)🚧  $(P_BLUE)Creating directory $(P_YELLOW)$(1) $(P_BLUE)and setting permissions $(FG_TEXT)"; \
 		mkdir -p $(1); \
 		chmod u+rwx $(1); \
-		printf "\n$(LF)✅  $(P_BLUE)Successfully created directory $(P_GREEN)$(1) $(P_BLUE)! $(P_NC)\n\n"; \
+		printf "$(LF)  🟢  $(P_BLUE)Successfully created directory $(P_GREEN)$(1) $(P_BLUE)! $(FG_TEXT)"; \
 	fi
 endef
 

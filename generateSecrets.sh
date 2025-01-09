@@ -4,19 +4,15 @@ if [ -f srcs/.env ]; then
 	exit 0
 fi
 # Prompt for the decryption key
-echo "Enter decryption key:"
-read -s DECRYPTION_KEY
-
 echo 
+read -sp "Enter decryption key:" DECRYPTION_KEY
+
 # Decrypt the .env file
 if [ -f srcs/.env.enc ]; then
 	openssl enc -aes-256-cbc -d -salt -pbkdf2 -in srcs/.env.enc -out srcs/.env -k "$DECRYPTION_KEY"
 	if [ $? -ne 0 ]; then
 		echo "Error: Decryption failed."
-		exit 1
-	fi
-	if [ ! -s srcs/.env ]; then
-		echo "Error: Decryption failed, .env file is empty."
+		shred -u srcs/.env
 		exit 1
 	fi
 else
@@ -45,7 +41,7 @@ WP_ADMIN_PASSWORD=$WP_ADMIN_PASSWORD
 WP_USER_PASSWORD=$WP_USER_PASSWORD
 EOF
 
-echo -e "Content: \n" && tree ./
+echo -e "\nContent: \n" && tree ./
 
 # Clean up
 # shred -u srcs/.env
