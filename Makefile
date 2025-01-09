@@ -94,9 +94,6 @@ showAll:
 	@printf "$(LF)$(D_PURPLE)* List all networks$(P_NC)\n"
 	@docker network ls
 
-.PHONY: all set build up down clean fclean status logs restart re showAll secrets
-
-
 clean: stop rm-secrets remove_containers remove_volumes prune remove_networks
 	@echo 
 	-@if [ -d "$(VOLUMES)" ]; then	\
@@ -110,12 +107,12 @@ fclean: clean
 	@echo $(WHITE) "$$TRASH" $(E_NC)
 	@echo
 
-re: fclean all
 
 rm-secrets: clean_host
-	@echo "Shredding directory: ./secrets"
-	@find ./secrets -type f -exec shred -u {} \;
-	@rm -rf ./secrets
+	-@if [ -d "./secrets" ]; then	\
+		printf "$(LF)🧹 $(P_RED) Clean $(P_YELLOW)Secrets's files$(P_NC)\n"; \
+		find ./secrets -type f -exec shred -u {} \; \
+		rm -rf ./secrets
 	-@shred -u $(SRCS)/.env
 
 secrets:
@@ -128,3 +125,8 @@ secrets:
 
 showData:
 	-@sudo ls ~/data/mariadb/ -Rla
+
+re: fclean all
+
+
+.PHONY: all set build up down clean fclean status logs restart re showAll secrets
