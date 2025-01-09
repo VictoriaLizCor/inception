@@ -24,12 +24,15 @@ services:
 #     build: requirements/wordpress
 #     container_name: ${CONTAINER_NAME}_wordpress
 #     environment:
-#       WORDPRESS_DB_HOST: ${WP_DB_HOST}
-#       WORDPRESS_DB_USER: ${WP_DB_USER}
-#       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
-#       WORDPRESS_DB_NAME: ${WP_DB_NAME}
-#       WORDPRESS_TABLE_PREFIX: wp_
-#       WORDPRESS_DEBUG: 1
+      # WORDPRESS_DB_HOST: mariadb:3306
+      # WORDPRESS_DB_USER: ${DB_USER:-default_db_user}
+      # WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_user_pass
+      # WORDPRESS_DB_NAME: ${DB_NAME:-default_db_name}
+      # WORDPRESS_TABLE_PREFIX: ${WP_TABLE_PREFIX:-wp_}
+      # WORDPRESS_DEBUG: ${WP_DEBUG:-0}
+      # WORDPRESS_CONFIG_EXTRA: |
+        # define('WP_HOME', 'http://${DOMAIN_NAME}');
+        # define('WP_SITEURL', 'http://${DOMAIN_NAME}');
 #     volumes:
 #       - wp-data:/var/www/html
 #     env_file:
@@ -51,10 +54,10 @@ services:
     #     target: /etc/mysql/mariadb.conf.d/config.cnf
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_pass
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
+      MYSQL_DATABASE: ${DB_NAME:-default_db_name}
+      MYSQL_USER: ${DB_USER:-default_db_user}
       MYSQL_PASSWORD_FILE: /run/secrets/db_user_pass
-      MYSQL_TCP_PORT: ${DB_PORT}
+      MYSQL_TCP_PORT: ${DB_PORT:-0}
     ports:
       - "${DB_PORT}:3306"
     volumes:
