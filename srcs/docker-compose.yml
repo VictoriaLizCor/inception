@@ -53,10 +53,6 @@ services:
       secrets:
         - db_root_pass
         - db_user_pass
-        # - source: db_root_pass
-        #     target: /run/secrets/db_root_pass
-        # - source: db_user_pass
-        #     target: /run/secrets/db_root_pass
     container_name: mariadb
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -66,16 +62,12 @@ services:
       - "${DB_PORT}:3306"
     volumes:
       - db-vol:/var/lib/mysql
-    # secrets:
-    #   - db_root_pass
-    #   - db_user_pass
-      # - source: db_root_pass
-      #   target: /run/secrets/db_root_pass
-      # - source: db_user_pass
-      #   target: /run/secrets/db_root_pass
     networks:
       - private
     restart: always
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:unconfined
     # healthcheck:
     #   test: ["CMD-SHELL", "mysqladmin ping -h localhost -u example -pexample"]
     #   interval: 30s

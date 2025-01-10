@@ -64,7 +64,7 @@ remove_volumes:
 
 remove_networks:
 	@printf "$(LF)$(P_RED)  ❗  Removing $(P_YELLOW)networks $(FG_TEXT)"
-	@docker network ls --filter "type=custom" -q | xargs -r docker network rm
+	@docker network ls --filter "type=custom" -q | xargs -r docker network rm > /dev/null
 
 prune:
 	@docker image prune -a -f > /dev/null

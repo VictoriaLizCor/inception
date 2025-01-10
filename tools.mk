@@ -122,8 +122,10 @@ endef
 
 mariadb:
 	$(CMD) build --no-cache mariadb
-mdb:
+rmdb:
 	@docker exec -it --user root mariadb bash
+mdb:
+	@docker exec -it --user mysql mariadb bash
 #--------------------COLORS----------------------------#
 # For print
 CL_BOLD  = \e[1m
