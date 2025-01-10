@@ -86,11 +86,11 @@ cpy:
 
 check_host:
 	@if grep -q "127.0.0.1 ${USER}.42.fr" /etc/hosts ; then \
-		printf "$(LF)🟢 $(P_BLUE)Host entry for $(P_YELLOW)${USER}.42.fr $(P_BLUE)already exists$(FG_TEXT)\n\n"; \
+		printf "$(LF)  🟢 $(P_BLUE)Host entry for $(P_YELLOW)${USER}.42.fr $(P_BLUE)already exists$(FG_TEXT)\n\n"; \
 	else \
 		printf "$(LF)🚧  $(P_BLUE)Creating host entry for $(P_YELLOW)${USER}.42.fr$(P_BLUE)$(FG_TEXT)\n"; \
 		echo "127.0.0.1 ${USER}.42.fr" | sudo tee -a /etc/hosts > /dev/null; \
-		printf "\n$(LF)🟢  $(P_BLUE)Successfully created host entry for $(P_GREEN)${USER}.42.fr$(P_BLUE)! $(P_NC)\n\n"; \
+		printf "\n$(LF)  🟢  $(P_BLUE)Successfully created host entry for $(P_GREEN)${USER}.42.fr$(P_BLUE)! $(P_NC)\n\n"; \
 	fi
 
 clean_host:
@@ -120,7 +120,10 @@ define createDir
 	fi
 endef
 
-
+mariadb:
+	$(CMD) build --no-cache mariadb
+mdb:
+	@docker exec -it --user root mariadb bash
 #--------------------COLORS----------------------------#
 # For print
 CL_BOLD  = \e[1m

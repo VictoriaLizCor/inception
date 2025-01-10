@@ -5,8 +5,8 @@ if [ -f srcs/.env ]; then
 fi
 # Prompt for the decryption key
 echo 
-read -sp "Enter decryption key:" DECRYPTION_KEY
-
+# read -sp "Enter decryption key:" DECRYPTION_KEY # uncomment
+DECRYPTION_KEY="test123" # to be deleted0
 # Decrypt the .env file
 if [ -f srcs/.env.enc ]; then
 	openssl enc -aes-256-cbc -d -salt -pbkdf2 -in srcs/.env.enc -out srcs/.env -k "$DECRYPTION_KEY"

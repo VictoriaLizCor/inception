@@ -1,10 +1,9 @@
-
 services:
   # nginx:
   #   build:
   #     context: requirements/nginx
   #     dockerfile: Dockerfile
-  #   container_name: ${CONTAINER_NAME}_nginx
+  #   container_name: nginx
   #   ports:
   #     - "443:443"
   #   volumes:
@@ -19,55 +18,61 @@ services:
   #   networks:
   #     - Inception42
   #   restart: always
-# WORDPRESS
-#   wordpress:
-#     build: requirements/wordpress
-#     container_name: ${CONTAINER_NAME}_wordpress
-#     environment:
-      # WORDPRESS_DB_HOST: mariadb:3306
-      # WORDPRESS_DB_USER: ${DB_USER:-default_db_user}
-      # WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_user_pass
-      # WORDPRESS_DB_NAME: ${DB_NAME:-default_db_name}
-      # WORDPRESS_TABLE_PREFIX: ${WP_TABLE_PREFIX:-wp_}
-      # WORDPRESS_DEBUG: ${WP_DEBUG:-0}
-      # WORDPRESS_CONFIG_EXTRA: |
-        # define('WP_HOME', 'http://${DOMAIN_NAME}');
-        # define('WP_SITEURL', 'http://${DOMAIN_NAME}');
-#     volumes:
-#       - wp-data:/var/www/html
-#     env_file:
-#       - .env
-#     networks:
-#       - private
-#       - Inception42
-#     depends_on:
-#       - mariadb
-#     restart: always
+
+  # wordpress:
+  #   build: requirements/wordpress
+  #   container_name: wordpress
+  #   environment:
+  #     WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+  #     WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+  #     WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+  #     WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+  #     WORDPRESS_TABLE_PREFIX: ${WP_TABLE_PREFIX:-wp_}
+  #     WORDPRESS_DEBUG: ${WP_DEBUG:-0}
+  #     WORDPRESS_CONFIG_EXTRA: |
+  #       define('WP_HOME', 'http://${DOMAIN_NAME}');
+  #       define('WP_SITEURL', 'http://${DOMAIN_NAME}');
+  #   volumes:
+  #     - wp-vol:/var/www/html
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - private
+  #     - Inception42
+  #   depends_on:
+  #     - mariadb
+  #   restart: always
 
   mariadb:
     build:
       context: ./requirements/mariadb
       dockerfile: Dockerfile
-    container_name: ${CONTAINER_NAME}_mariadb
-    # configs:
-    #   - source: mariadbConfig
-    #     target: /etc/mysql/mariadb.conf.d/config.cnf
+      args:
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_USER: ${MYSQL_USER}
+      secrets:
+        - db_root_pass
+        - db_user_pass
+        # - source: db_root_pass
+        #     target: /run/secrets/db_root_pass
+        # - source: db_user_pass
+        #     target: /run/secrets/db_root_pass
+    container_name: mariadb
     environment:
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_pass
-      MYSQL_DATABASE: ${DB_NAME:-default_db_name}
-      MYSQL_USER: ${DB_USER:-default_db_user}
-      MYSQL_PASSWORD_FILE: /run/secrets/db_user_pass
-      MYSQL_TCP_PORT: ${DB_PORT:-0}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_TCP_PORT: ${DB_PORT}
     ports:
       - "${DB_PORT}:3306"
     volumes:
       - db-vol:/var/lib/mysql
-    env_file:
-      - .env
-    secrets:
-      - db_user_pass
-      - source: db_user_pass
-        target: /run/secrets/db_root_pass
+    # secrets:
+    #   - db_root_pass
+    #   - db_user_pass
+      # - source: db_root_pass
+      #   target: /run/secrets/db_root_pass
+      # - source: db_user_pass
+      #   target: /run/secrets/db_root_pass
     networks:
       - private
     restart: always
@@ -77,33 +82,6 @@ services:
     #   timeout: 10s
     #   retries: 5
 
-volumes:
-  db-vol:
-    name: dataBase
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${DB_VOLUME}
-
-  wp-vol:
-    name: userData
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${WP_VOLUME}
-
-
-networks:
-  Inception42:
-    name: ${NETWORK_NAME}
-    driver: bridge
-  private:
-    # ipam:
-    #   config:
-    #     - subnet: "10.0.0.0/19"
-    #       gateway: "10.0.0.1"
 secrets:
   db_root_pass:
     file: ../secrets/db_root_password.txt
@@ -118,8 +96,33 @@ secrets:
   credentials:
     file: ../secrets/credentials.txt
 
+volumes:
+  db-vol:
+    name: dataBase
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MARIADB_VOLUME}
+
+  wp-vol:
+    name: userData
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WORDPRESS_VOLUME}
+
+networks:
+  Inception42:
+    name: ${NETWORK_NAME}
+    driver: bridge
+  private:
+    # ipam:
+    #   config:
+    #     - subnet: "10.0.0.0/19"
+    #       gateway: "10.0.0.1"
+
 #  configs:
 #    mariadbConfig:
 #      file: ./requirements/mariadb/conf/config.cnf
-
-

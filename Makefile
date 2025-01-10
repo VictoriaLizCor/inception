@@ -17,8 +17,7 @@ all: build up showAll#up
 
 build: $(VOLUMES) secrets check_host
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building images \n\n$(P_NC)"
-	@$(CMD) build 
-#--no-cache
+	@$(CMD) build --no-cache
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built Docker Images! 🐳\n$(P_NC)"
 	@echo $(CYAN) "$$IMG" $(E_NC)
 	@echo "$$MANUAL" $(E_NC)
@@ -27,7 +26,7 @@ $(VOLUMES): check_os
 	@printf "$(LF)\n$(P_BLUE)⚙️  Setting $(P_YELLOW)$(NAME)'s volumes$(FG_TEXT)\n"
 	$(call createDir,$(WP_VOL))
 	$(call createDir,$(DB_VOL))
-	@echo
+	@$(call createDir,./secrets)
 
 down:
 	@printf "$(LF)\n$(P_RED)[-] Phase of stopping and deleting containers $(P_NC)\n"
@@ -69,6 +68,7 @@ remove_networks:
 
 prune:
 	@docker image prune -a -f > /dev/null
+	@docker builder prune -a -f > /dev/null
 
 
 clean:
@@ -96,10 +96,9 @@ rm-secrets: clean_host
 
 secrets:
 	@chmod +x generateSecrets.sh
-	@$(call createDir,./secrets)
 	@echo $(WHITE)
 	@bash generateSecrets.sh
-	@echo $(E_NC)
+	@echo $(E_NC) > /dev/null
 
 showData:
 	-@sudo ls ~/data/mariadb/ -Rla
