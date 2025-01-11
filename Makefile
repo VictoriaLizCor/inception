@@ -17,7 +17,8 @@ all: build up showAll#up
 
 build: $(VOLUMES) secrets check_host
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building images \n\n$(P_NC)"
-	@$(CMD) build --no-cache
+	@$(CMD) build 
+#--no-cache
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built Docker Images! 🐳\n$(P_NC)"
 	@echo $(CYAN) "$$IMG" $(E_NC)
 	@echo "$$MANUAL" $(E_NC)

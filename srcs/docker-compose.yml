@@ -65,9 +65,9 @@ services:
     networks:
       - private
     restart: always
-    security_opt:
-      - no-new-privileges:true
-      - seccomp:unconfined
+    # security_opt:
+    #   - no-new-privileges:true
+    #   - seccomp:unconfined
     # healthcheck:
     #   test: ["CMD-SHELL", "mysqladmin ping -h localhost -u example -pexample"]
     #   interval: 30s
