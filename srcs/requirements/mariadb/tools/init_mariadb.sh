@@ -9,10 +9,6 @@ export MYSQL_USER=${MYSQL_USER}
 export MYSQL_PASSWORD=${MYSQL_PASSWORD}
 export MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
 
-echo "root:${MYSQL_ROOT_PASSWORD}" | sudo chpasswd
-echo "mysql:${MYSQL_PASSWORD}" | sudo chpasswd
-
-envsubst < /init.sql.template > /init.sql && cat /init.sql
 # Add error handling
 set -e
 
@@ -23,23 +19,45 @@ if [ -z "$MYSQL_ROOT_PASSWORD" ] || [ -z "$MYSQL_DATABASE" ] || [ -z "$MYSQL_USE
     exit 1
 fi
 
+# Set passwords for root and mysql users
+echo "Setting passwords for root and mysql users"
+echo "root:${MYSQL_ROOT_PASSWORD}" | chpasswd
+echo "mysql:${MYSQL_PASSWORD}" | chpasswd 
+# Check and set shell for root user
+if [ "$(getent passwd root | cut -d: -f7)" != "/bin/bash" ]; then
+    usermod -s /bin/bash root
+fi
+
+# Check and set shell for mysql user
+if [ "$(getent passwd mysql | cut -d: -f7)" != "/bin/bash" ]; then
+    usermod -s /bin/bash mysql
+fi
+
+envsubst < /init.sql.template > /init.sql && cat /init.sql
+
+# Perform initialization only if data directory is not initialized
+if [ ! -d "/var/lib/mysql/mysql" ]; then
+    echo "Initializing MariaDB data directory..."
+    mysql_install_db --user=mysql --datadir=/var/lib/mysql
+else
+    echo "MariaDB data directory already initialized."
+fi
+
 # Perform initialization only if data directory is not initialized
 if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
-	echo "Initializing MariaDB data directory..."
-	mysql_install_db --user=mysql --datadir=/var/lib/mysql
 
     # Start MariaDB in the background
-    mysqld_safe --skip-networking --defaults-file=/etc/mysql/mariadb.conf.d/config.cnf &
+	echo "Starting MariaDB in the background"
+    service mariadb start
+	sleep 5
     
     # Wait for MariaDB to start
-    sleep 10
-
+	echo "loading script"
     # Run the init.sql script
-    mysql -uroot < /init.sql
-	# Set the root password and flush privileges
-    mysql -uroot -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}'; FLUSH PRIVILEGES;"
+	mysql -uroot  < /init.sql
 
     # Shutdown MariaDB
+	echo "Shutdown script"
     mysqladmin -uroot -p"${MYSQL_ROOT_PASSWORD}" shutdown
 
     echo "MariaDB initialization completed."

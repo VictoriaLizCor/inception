@@ -7,7 +7,7 @@ RUN apt-get update -qq && \
 
 # Copy the init.sql template and secrets
 COPY ./tools/init.sql /init.sql.template
-COPY ./tools/init_mariadb.sh /init_mariadb.sh
+COPY ./tools/init_mariadb.sh /usr/bin/init_mariadb.sh
 # Copy custom MariaDB configuration
 COPY ./conf/config.cnf /etc/mysql/mariadb.conf.d/config.cnf
 
@@ -19,8 +19,8 @@ ARG MYSQL_USER
 RUN --mount=type=secret,id=db_root_pass \
     --mount=type=secret,id=db_user_pass \
     echo "Running init_mariadb.sh script" && \
-    chmod +x /init_mariadb.sh && \
-    /init_mariadb.sh
+    chmod +x /usr/bin/init_mariadb.sh && \
+    /usr/bin/init_mariadb.sh
 
 # Ensure that all users require a password for login
 RUN usermod -s /bin/bash root && usermod -s /bin/bash mysql
