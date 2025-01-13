@@ -7,6 +7,9 @@ RUN apt-get update -qq && \
 
 # Copy the init.sql template and secrets
 COPY ./tools/init.sql /init.sql.template
+COPY ./tools/init_mariadb.sh /init_mariadb.sh
+# Copy custom MariaDB configuration
+COPY ./conf/config.cnf /etc/mysql/mariadb.conf.d/config.cnf
 
 # Set build arguments
 ARG MYSQL_DATABASE
@@ -15,20 +18,9 @@ ARG MYSQL_USER
 # Set environment variables and store them in a temporary file
 RUN --mount=type=secret,id=db_root_pass \
     --mount=type=secret,id=db_user_pass \
-    export MYSQL_DATABASE=${MYSQL_DATABASE} \
-    MYSQL_USER=${MYSQL_USER} \
-    MYSQL_PASSWORD=$(cat /run/secrets/db_user_pass) \
-    MYSQL_ROOT_PASSWORD=$(cat /run/secrets/db_root_pass) && \
-    envsubst < /init.sql.template > /init.sql && cat /init.sql && \
-    echo "root:${MYSQL_ROOT_PASSWORD}" | sudo chpasswd && \
-    echo "mysql:${MYSQL_PASSWORD}" | sudo chpasswd
-
-# Initialize the MariaDB data directory and run the init.sql script
-RUN mysql_install_db --user=mysql --datadir=/var/lib/mysql && \
-    mysqld_safe --skip-networking & \
-    sleep 5 && \
-    mysql -uroot < /init.sql && \
-    mysqladmin shutdown
+    echo "Running init_mariadb.sh script" && \
+    chmod +x /init_mariadb.sh && \
+    /init_mariadb.sh
 
 # Ensure that all users require a password for login
 RUN usermod -s /bin/bash root && usermod -s /bin/bash mysql
@@ -36,34 +28,24 @@ RUN usermod -s /bin/bash root && usermod -s /bin/bash mysql
 # Configure PAM to require a password for the root user
 RUN echo "auth required pam_unix.so" >> /etc/pam.d/common-auth 
 
-# # Initialize the MariaDB data directory and run the init.sql script
-# RUN mysql_install_db --user=mysql --datadir=/var/lib/mysql && \
-#     mysqld_safe --skip-networking & \
-#     sleep 5 && \
-#     mysql -uroot --skip-password < /init.sql && \
-#     mysqladmin shutdown
-
-# Initialize the MariaDB data directory and run the init.sql script
-
-
 FROM debian:bullseye
 
 # Install MariaDB server and MariaDB client
 RUN apt-get update -qq && \
     apt-get install -y -qq --no-install-recommends mariadb-server=1:10.5.26-0+deb11u2 mariadb-client=1:10.5.26-0+deb11u2 sudo sudo openssl passwd && \
     apt-get install -y -qq --no-install-recommends curl libaio1 && \
-    mkdir -p /var/lib/mysql /run/mysqld && \
-    chown -R mysql:mysql /var/lib/mysql /run/mysqld && \
+    mkdir -p /var/lib/mysql /run/mysqld /var/log/mysql && \
+    chown -R mysql:mysql /var/lib/mysql /run/mysqld /var/log/mysql && \
     rm -rf /var/lib/apt/lists/*
 
-	# Ensure that all users require a password for login
+# Ensure that all users require a password for login
 RUN usermod -s /bin/bash root && usermod -s /bin/bash mysql
 
 # Ensure sudo requires a password
-RUN echo "root ALL=(ALL) ALL" >> /etc/sudoers
+COPY --from=builder /etc/sudoers /etc/sudoers
 
 # Configure PAM to require a password for the root user
-RUN echo "auth required pam_unix.so" >> /etc/pam.d/common-auth
+COPY --from=builder /etc/pam.d/common-auth /etc/pam.d/common-auth
 
 # Copy custom MariaDB configuration
 COPY ./conf/config.cnf /etc/mysql/mariadb.conf.d/config.cnf
@@ -71,14 +53,15 @@ COPY ./conf/config.cnf /etc/mysql/mariadb.conf.d/config.cnf
 # Copy the initialized database from the builder stage
 COPY --from=builder /var/lib/mysql /var/lib/mysql
 
-# Only for testing face, TO BE REMOVED
-COPY --from=builder /init.sql /init.sql
+# Ensure the /run/mysqld and /var/log/mysql directories exist and have the correct permissions
+RUN mkdir -p /run/mysqld /var/log/mysql && chown -R mysql:mysql /run/mysqld /var/log/mysql /var/lib/mysql
 
+# Only for testing phase, TO BE REMOVED
+COPY --from=builder /init.sql /init.sql
 
 EXPOSE 3306
 
 USER mysql
 
-# Start MariaDB
-# CMD ["sh", "-c", "echo -e '\\033[1;38;2;189;147;249mDatabase is running\\033[m'; exec mysqld_safe"]
-CMD ["mysqld_safe"]
+# Start MariaDB with the specified configuration file
+CMD ["mysqld_safe", "--defaults-file=/etc/mysql/mariadb.conf.d/config.cnf", "--datadir=/var/lib/mysql", "--user=mysql"]

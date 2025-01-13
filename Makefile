@@ -68,8 +68,10 @@ remove_networks:
 	@docker network ls --filter "type=custom" -q | xargs -r docker network rm > /dev/null
 
 prune:
-	@docker image prune -a -f > /dev/null
-	@docker builder prune -a -f > /dev/null
+	@docker image prune -af > /dev/null
+	@docker builder prune -af > /dev/null
+	@docker system prune -af > /dev/null
+	@docker volume prune -f > /dev/null
 
 
 clean:

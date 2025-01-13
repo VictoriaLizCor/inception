@@ -64,15 +64,15 @@ services:
       - db-vol:/var/lib/mysql
     networks:
       - private
-    restart: always
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     # security_opt:
     #   - no-new-privileges:true
     #   - seccomp:unconfined
-    # healthcheck:
-    #   test: ["CMD-SHELL", "mysqladmin ping -h localhost -u example -pexample"]
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 5
 
 secrets:
   db_root_pass:
