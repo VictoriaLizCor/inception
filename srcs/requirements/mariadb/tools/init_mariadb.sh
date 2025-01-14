@@ -24,8 +24,19 @@ echo "Setting passwords for root and mysql users"
 echo "root:${MYSQL_ROOT_PASSWORD}" | chpasswd
 echo "mysql:${MYSQL_PASSWORD}" | chpasswd 
 
+grep '^root:' /etc/shadow
+
 # Configure PAM to require a password for the root user
 echo "auth required pam_unix.so" >> /etc/pam.d/common-auth 
+
+# Configure PAM to require a password for login shells
+# echo "auth required pam_unix.so" >> /etc/pam.d/login
+
+# Configure PAM to require a password for su
+echo "auth required pam_unix.so" >> /etc/pam.d/su
+
+# Ensure PAM session is properly configured
+echo "session required pam_unix.so" >> /etc/pam.d/common-session
 
 # Check and set shell for root user
 if [ "$(getent passwd root | cut -d: -f7)" != "/bin/bash" ]; then

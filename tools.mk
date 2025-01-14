@@ -51,6 +51,11 @@ add_docker_group:
 	@sudo usermod -aG docker $(shell whoami)
 	@sudo systemctl restart docker
 
+rm_docker_group:
+	@echo "$(D_PURPLE)[*] Removing user from docker group ...$(P_NC)"
+	@sudo gpasswd -d $(shell whoami) docker
+	@sudo systemctl restart docker
+
 encrypt:
 	@read -p "Please enter some input: " user_input; \
 	openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env -out srcs/.env.enc -k $$user_input
