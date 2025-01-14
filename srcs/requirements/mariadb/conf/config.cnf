@@ -1,4 +1,5 @@
 [mysqld]
+skip-grant-tables=0
 user=mysql                      # default TODO user/group
 datadir=/var/lib/mysql          # default
 port=3306                       # default

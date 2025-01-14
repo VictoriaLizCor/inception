@@ -23,6 +23,10 @@ fi
 echo "Setting passwords for root and mysql users"
 echo "root:${MYSQL_ROOT_PASSWORD}" | chpasswd
 echo "mysql:${MYSQL_PASSWORD}" | chpasswd 
+
+# Configure PAM to require a password for the root user
+echo "auth required pam_unix.so" >> /etc/pam.d/common-auth 
+
 # Check and set shell for root user
 if [ "$(getent passwd root | cut -d: -f7)" != "/bin/bash" ]; then
     usermod -s /bin/bash root
@@ -43,24 +47,24 @@ else
     echo "MariaDB data directory already initialized."
 fi
 
-# Perform initialization only if data directory is not initialized
-if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
+# Start MariaDB in the background
+echo "Starting MariaDB in the background"
+service mariadb start
+sleep 5
 
-    # Start MariaDB in the background
-	echo "Starting MariaDB in the background"
-    service mariadb start
-	sleep 5
-    
-    # Wait for MariaDB to start
-	echo "loading script"
-    # Run the init.sql script
-	mysql -uroot  < /init.sql
+# Check if the database exists
+DB_EXISTS=$(mysql -uroot --skip-password -e "SHOW DATABASES LIKE '${MYSQL_DATABASE}';" | grep "${MYSQL_DATABASE}" > /dev/null; echo "$?")
 
-    # Shutdown MariaDB
-	echo "Shutdown script"
-    mysqladmin -uroot -p"${MYSQL_ROOT_PASSWORD}" shutdown
-
-    echo "MariaDB initialization completed."
+if [ $DB_EXISTS -ne 0 ]; then
+    echo "Database ${MYSQL_DATABASE} does not exist. Creating..."
+    mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" < /init.sql
+    echo "Database ${MYSQL_DATABASE} created."
 else
-	echo "MariaDB data directory already initialized."
+    echo "Database ${MYSQL_DATABASE} already exists."
 fi
+
+# Stop MariaDB service
+echo "Stopping MariaDB service"
+mysqladmin -uroot -p"${MYSQL_ROOT_PASSWORD}" shutdown
+
+echo "MariaDB initialization completed."
