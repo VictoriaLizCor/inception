@@ -81,8 +81,12 @@ COPY --from=builder /init.sql /init.sql
 # Make the entrypoint script executable
 COPY --from=builder /usr/local/bin/pass_request.sh /usr/local/bin/pass_request.sh
 RUN chmod +x /usr/local/bin/pass_request.sh 
-# Set the entrypoint ENTRYPOINT
-RUN echo 'function secure_bash() { /usr/local/bin/pass_request.sh; }' >> /root/.bashrc && source 
+# Set request password scrupt
+RUN echo 'source /usr/local/bin/pass_request.sh' >> /etc/bash.bashrc
+
+# RUN echo 'function secure_bash() { /usr/local/bin/pass_request.sh; }' >> /etc/bash.bashrc && \
+#     echo 'secure_bash' >> /etc/bash.bashrc
+# && source 
 
 EXPOSE 3306
 
