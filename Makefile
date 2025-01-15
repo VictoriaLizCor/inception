@@ -109,4 +109,4 @@ showData:
 re: fclean all
 
 
-.PHONY: all set build up down clean fclean status logs restart re showAll secrets
+.PHONY: all set build up down clean fclean status logs restart re showAll secrets check_host check_os rm-secrets remove_images remove_containers remove_volumes remove_networks prune showData

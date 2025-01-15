@@ -45,10 +45,16 @@ RUN apt-get install -y -qq --no-install-recommends sudo openssl passwd curl liba
 RUN if [ "$(getent passwd root | cut -d: -f7)" != "/bin/bash" ]; then usermod -s /bin/bash root; fi && \
     if [ "$(getent passwd mysql | cut -d: -f7)" != "/bin/bash" ]; then usermod -s /bin/bash mysql; fi
 
-# # Configure SSH to require password authentication
-# RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-#     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+# Copy the initialized database from the builder stage
+COPY --from=builder /var/lib/mysql /var/lib/mysql
+COPY --from=builder /etc/pam.d/login /etc/pam.d/login
+COPY --from=builder /etc/mysql/mariadb.conf.d/config.cnf /etc/mysql/mariadb.conf.d/config.cnf
 
+# Make the entrypoint script executable
+COPY --from=builder /usr/local/bin/pass_request.sh /usr/local/bin/pass_request.sh
+COPY --from=builder /etc/shadow /etc/shadow
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
 
 # Ensure sudo requires a password
 RUN echo '%sudo ALL=(ALL) ALL' >> /etc/sudoers
@@ -57,29 +63,19 @@ RUN echo '%sudo ALL=(ALL) ALL' >> /etc/sudoers
 RUN echo "auth required pam_unix.so" >> /etc/pam.d/common-auth
 
 # Configure PAM to require a password for login shells
-# RUN echo "auth       required   pam_unix.so try_first_pass nullok_secure pwfeedback" >> /etc/pam.d/login
+RUN echo "auth required pam_unix.so" >> /etc/pam.d/login
 
 # Configure PAM to require a password for su
 RUN echo "auth required pam_unix.so" >> /etc/pam.d/su
 RUN echo "account required pam_unix.so" >> /etc/pam.d/su
 RUN echo "session required pam_unix.so" >> /etc/pam.d/su
+
 # Ensure PAM session is properly configured
 RUN echo "session required pam_unix.so" >> /etc/pam.d/common-session
-
-# Copy custom MariaDB configuration
-COPY ./conf/config.cnf /etc/mysql/mariadb.conf.d/config.cnf
-
-# Copy the initialized database from the builder stage
-COPY --from=builder /var/lib/mysql /var/lib/mysql
-COPY --from=builder /etc/pam.d/login /etc/pam.d/login
-COPY --from=builder /etc/shadow  /etc/shadow
-
-RUN chown -R mysql:mysql /var/lib/mysql /run/mysqld /var/log/mysql
 # Only for testing phase, TO BE REMOVED
-COPY --from=builder /init.sql /init.sql
+# COPY --from=builder /init.sql /init.sql
 
-# Make the entrypoint script executable
-COPY --from=builder /usr/local/bin/pass_request.sh /usr/local/bin/pass_request.sh
+
 RUN chmod +x /usr/local/bin/pass_request.sh 
 # Set request password scrupt
 RUN echo 'source /usr/local/bin/pass_request.sh' >> /etc/bash.bashrc
@@ -87,6 +83,9 @@ RUN echo 'source /usr/local/bin/pass_request.sh' >> /etc/bash.bashrc
 # RUN echo 'function secure_bash() { /usr/local/bin/pass_request.sh; }' >> /etc/bash.bashrc && \
 #     echo 'secure_bash' >> /etc/bash.bashrc
 # && source 
+
+# Set permissions for MariaDB directories
+RUN chown -R mysql:mysql /var/lib/mysql /run/mysqld /var/log/mysql
 
 EXPOSE 3306
 

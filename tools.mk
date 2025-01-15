@@ -71,8 +71,7 @@ install_docker:
 		sudo apt-get install -y \
 			ca-certificates \
 			curl \
-			gnupg \
-			lsb-release; \
+			gnupg; \
 		printf "$(LF)$(P_CCYN)⚙️  Adding Docker's official GPG key...$(FG_TEXT)\n"; \
 		curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg; \
 		printf "$(LF)$(P_CCYN)⚙️  Setting up the Docker repository...$(FG_TEXT)\n"; \
@@ -84,6 +83,20 @@ install_docker:
 		printf "$(LF)$(P_CCYN)⚙️  Installing Docker...$(FG_TEXT)\n"; \
 		sudo apt-get install -y docker-ce docker-ce-cli containerd.io; \
 		printf "$(LF)$(P_GREEN)✅ Successfully installed Docker! ✅$(P_NC)\n"; \
+	fi
+	@if docker compose version >/dev/null 2>&1; then \
+		printf "$(LF)$(D_PURPLE)🟢  Docker Compose is already installed! $(P_NC)\n"; \
+	else \
+		printf "$(LF)$(P_CCYN)⚙️  Installing Docker Compose...$(FG_TEXT)\n"; \
+		sudo apt-get update; \
+		sudo apt-get install -y ca-certificates curl gnupg; \
+		sudo mkdir -p /etc/apt/keyrings; \
+		curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg; \
+		echo \
+		  "deb [arch=$$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null; \
+		sudo apt-get update; \
+		sudo apt-get install -y docker-compose-plugin; \
+		printf "$(LF)$(P_GREEN)✅ Successfully installed Docker Compose! ✅$(P_NC)\n"; \
 	fi
 # copy files from local machine to VM with ssh
 cpy:

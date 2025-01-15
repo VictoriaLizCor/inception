@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# read -sp "Password: " password
+read -sp "Password: " password
 #!/bin/bash
 
 # Request password
-echo -n "Password: "
-read -s password
-echo
+# echo -n "Password: "
+# read -s password
+# echo
 
 # Check password (replace this with your actual authentication logic)
 if ! echo "$password" | sudo -S true 2>/dev/null; then
