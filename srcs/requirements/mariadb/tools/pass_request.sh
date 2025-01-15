@@ -1,5 +1,5 @@
 #!/bin/bash
-
+su -
 # Trap SIGINT (Ctrl+C) and exit immediately
 trap "echo 'Authentication canceled'; exit 1" SIGINT
 

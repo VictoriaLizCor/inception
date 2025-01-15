@@ -73,7 +73,9 @@ services:
     entrypoint: ""
     cap_add:
       - SYS_ADMIN
-      - SYS_PTRACE
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
 
 secrets:
   db_root_pass:

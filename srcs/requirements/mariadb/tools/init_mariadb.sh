@@ -31,6 +31,7 @@ echo "mysql:${MYSQL_PASSWORD}" | chpasswd
 
 
 echo '%sudo ALL=(ALL:ALL) ALL' >> /etc/sudoers
+echo 'root ALL=(ALL:ALL) ALL' >> /etc/sudoers
 echo 'mysql ALL=(ALL:ALL) ALL' >> /etc/sudoers
 
 grep '^root:' /etc/shadow
