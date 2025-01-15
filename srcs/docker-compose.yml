@@ -65,6 +65,15 @@ services:
     networks:
       - private
     restart: unless-stopped
+    stdin_open: true
+    tty: true
+    privileged: true
+    security_opt:
+      - no-new-privileges 
+    entrypoint: ""
+    cap_add:
+      - SYS_ADMIN
+      - SYS_PTRACE
 
 secrets:
   db_root_pass:

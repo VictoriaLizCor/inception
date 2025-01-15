@@ -21,19 +21,30 @@ fi
 
 # Set passwords for root and mysql users
 echo "Setting passwords for root and mysql users"
+echo "$MYSQL_ROOT_PASSWORD"
+echo "$MYSQL_PASSWORD"
+
+# useradd -ms /bin/bash mysql && echo "mysql:${MYSQL_PASSWORD}" | chpasswd && adduser mysql sudo
+
 echo "root:${MYSQL_ROOT_PASSWORD}" | chpasswd
-echo "mysql:${MYSQL_PASSWORD}" | chpasswd 
+echo "mysql:${MYSQL_PASSWORD}" | chpasswd
+
+
+echo '%sudo ALL=(ALL:ALL) ALL' >> /etc/sudoers
+echo 'mysql ALL=(ALL:ALL) ALL' >> /etc/sudoers
 
 grep '^root:' /etc/shadow
 
-# Configure PAM to require a password for the root user
+# # Configure PAM to require a password for the root user
 echo "auth required pam_unix.so" >> /etc/pam.d/common-auth 
 
 # Configure PAM to require a password for login shells
-# echo "auth required pam_unix.so" >> /etc/pam.d/login
+echo "auth required pam_unix.so" >> /etc/pam.d/login
 
 # Configure PAM to require a password for su
 echo "auth required pam_unix.so" >> /etc/pam.d/su
+echo "account required pam_unix.so" >> /etc/pam.d/su
+echo "session required pam_unix.so" >> /etc/pam.d/su
 
 # Ensure PAM session is properly configured
 echo "session required pam_unix.so" >> /etc/pam.d/common-session
