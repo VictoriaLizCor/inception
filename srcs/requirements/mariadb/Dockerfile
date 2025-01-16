@@ -2,11 +2,9 @@ FROM debian:bullseye as builder
 
 # Install gettext for envsubst and MariaDB server
 RUN apt-get update -qq && \
-	apt-get install -y -qq --no-install-recommends sudo openssl \
-	ca-certificates passwd gettext-base curl libaio1 libpam0g && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN curl -L -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup -o mariadb_repo_setup && \
+    apt-get install -y -qq --no-install-recommends sudo openssl \
+    ca-certificates passwd gettext-base curl libaio1 libpam0g && \
+    curl -L -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup -o mariadb_repo_setup && \
     chmod +x mariadb_repo_setup && \
     ./mariadb_repo_setup --mariadb-server-version=10.5 && \
     apt-get update && apt-get install -y mariadb-server && \
@@ -32,18 +30,15 @@ RUN --mount=type=secret,id=db_root_pass \
 
 FROM debian:bullseye
 
-RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends sudo openssl \
-	ca-certificates passwd curl libaio1 libpam0g && \
-    rm -rf /var/lib/apt/lists/*
-
-# Set up MariaDB repository and install MariaDB server and client
-RUN curl -L -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup -o mariadb_repo_setup && \
+RUN apt-get update -qq && \
+    apt-get install -y -qq --no-install-recommends sudo openssl \
+    ca-certificates passwd curl libaio1 libpam0g && \
+    curl -L -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup -o mariadb_repo_setup && \
     chmod +x mariadb_repo_setup && \
     ./mariadb_repo_setup --mariadb-server-version=10.5 && \
     apt-get update && apt-get install -y mariadb-server mariadb-client && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN mkdir -p /var/lib/mysql /run/mysqld /var/log/mysql
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /var/lib/mysql /run/mysqld /var/log/mysql
 
 #  Copy the initialized database and necessary files from the builder stage
 COPY --from=builder /var/lib/mysql /var/lib/mysql
@@ -57,13 +52,9 @@ COPY --from=builder /etc/shadow /etc/shadow
 COPY --from=builder /etc/pam.d/ /etc/pam.d/
 
 # Make the entrypoint script executable and configure login
-RUN chmod +x /usr/local/bin/pass_request.sh 
-
-# Configure PAM authentication for bash sessions
-RUN echo 'source /usr/local/bin/pass_request.sh' >> /etc/bash.bashrc
-
-# Set permissions for MariaDB directories
-RUN chown -R mysql:mysql /var/lib/mysql /run/mysqld /var/log/mysql
+RUN chmod +x /usr/local/bin/pass_request.sh && \
+echo 'source /usr/local/bin/pass_request.sh' >> /etc/bash.bashrc && \
+chown -R mysql:mysql /var/lib/mysql /run/mysqld /var/log/mysql
 
 
 EXPOSE 3306

@@ -31,7 +31,7 @@ $(VOLUMES): check_os
 
 down:
 	@printf "$(LF)\n$(P_RED)[-] Phase of stopping and deleting containers $(P_NC)\n"
-	@$(CMD) down -v
+	@$(CMD) down -v --rmi local
 
 up:
 	@printf "$(LF)\n$(D_PURPLE)[+] Phase of creating containers $(P_NC)\n"
@@ -77,7 +77,7 @@ prune:
 clean:
 	@printf "\n$(LF)🧹 $(P_RED) Clean $(P_GREEN) $(CURRENT)\n"
 	@printf "$(LF)\n  $(P_RED)❗  Removing $(FG_TEXT)"
-	@$(MAKE) --no-print stop 
+	@$(MAKE) --no-print stop down
 
 fclean: clean remove_containers remove_images  remove_volumes prune remove_networks
 	-@if [ -d "$(VOLUMES)" ]; then	\

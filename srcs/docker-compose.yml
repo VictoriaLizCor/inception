@@ -20,7 +20,15 @@ services:
   #   restart: always
 
   # wordpress:
-  #   build: requirements/wordpress
+  #   build:
+  #     context: ./requirements/wordpress
+  #     dockerfile: Dockerfile
+  #     args:
+  #       MYSQL_DATABASE: ${MYSQL_DATABASE}
+  #       MYSQL_USER: ${MYSQL_USER}
+  #     secrets:
+  #       - db_root_pass
+  #       - db_user_pass
   #   container_name: wordpress
   #   environment:
   #     WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
@@ -34,8 +42,8 @@ services:
   #       define('WP_SITEURL', 'http://${DOMAIN_NAME}');
   #   volumes:
   #     - wp-vol:/var/www/html
-  #   env_file:
-  #     - .env
+  #   # env_file:
+  #   #   - .env
   #   networks:
   #     - private
   #     - Inception42
@@ -70,7 +78,6 @@ services:
     privileged: true
     security_opt:
       - no-new-privileges 
-    entrypoint: ""
     cap_add:
       - SYS_ADMIN
       - SETGID
@@ -86,8 +93,8 @@ secrets:
     file: ../secrets/wp_admin_pass.txt
   wp_user_pass:
     file: ../secrets/wp_user_pass.txt
-  ftp_user_pass:
-    file: ../secrets/ftp_user_pass.txt
+  # ftp_user_pass:
+  #   file: ../secrets/ftp_user_pass.txt
   credentials:
     file: ../secrets/credentials.txt
 
