@@ -11,7 +11,7 @@ MDB			:= $(SRCS)/requirements/mariadb
 WP			:= $(SRCS)/requirements/wordpress
 NG			:= $(SRCS)/requirements/nginx
 NAME		:= Inception
--include tools.mk
+-include tools.mk mdb.mk wp.mk
 #-------------------- RULES ----------------------------#
 all: build up showAll#up
 

@@ -1,10 +1,10 @@
-# Use Debian Bullseye as the base image for the builder stage
+# Stage 1: Build stage
 FROM debian:bullseye as builder
 
 # Install necessary packages
 RUN apt-get update -qq && \
-    apt-get install -y -qq --no-install-recommends sudo openssl \
-    ca-certificates passwd gettext-base curl wget unzip && \
+    apt-get install -y -qq --no-install-recommends \
+    php-fpm php-mysql curl wget unzip && \
     rm -rf /var/lib/apt/lists/*
 
 # Install WordPress CLI
@@ -18,74 +18,44 @@ RUN wget https://wordpress.org/latest.zip && \
     mv wordpress /var/www/html && \
     rm latest.zip
 
-# Copy necessary files
-COPY ./tools/wp-config.php /var/www/html/wp-config.php
+# Copy PHP-FPM configuration
+COPY ./conf/www.cnf /etc/php/7.4/fpm/pool.d/www.conf
 
-# Set permissions for WordPress directories
-RUN chown -R www-data:www-data /var/www/html
+# Copy entrypoint script
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# Final stage
+# Copy secrets
+COPY ./credentials.txt /run/secrets/credentials
+
+# Configure WordPress
+RUN source /run/secrets/credentials && \
+    wp config create --path=/var/www/html --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASSWORD --dbhost=$DB_HOST --skip-check && \
+    wp config set AUTH_KEY "$AUTH_KEY" && \
+    wp config set SECURE_AUTH_KEY "$SECURE_AUTH_KEY" && \
+    wp config set LOGGED_IN_KEY "$LOGGED_IN_KEY" && \
+    wp config set NONCE_KEY "$NONCE_KEY" && \
+    wp config set AUTH_SALT "$AUTH_SALT" && \
+    wp config set SECURE_AUTH_SALT "$SECURE_AUTH_SALT" && \
+    wp config set LOGGED_IN_SALT "$LOGGED_IN_SALT" && \
+    wp config set NONCE_SALT "$NONCE_SALT"
+
+# Stage 2: Final stage
 FROM debian:bullseye
 
 # Install necessary packages
 RUN apt-get update -qq && \
-    apt-get install -y -qq --no-install-recommends sudo openssl \
-    ca-certificates passwd curl libaio1 libpam0g apache2 php php-mysql && \
+    apt-get install -y -qq --no-install-recommends \
+    php-fpm php-mysql && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the initialized WordPress files from the builder stage
 COPY --from=builder /var/www/html /var/www/html
-COPY --from=builder /usr/local/bin/wp /usr/local/bin/wp
+COPY --from=builder /etc/php/7.4/fpm/pool.d/www.conf /etc/php/7.4/fpm/pool.d/www.conf
+COPY --from=builder /entrypoint.sh /entrypoint.sh
 
-# Set environment variables
-ENV WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
-ENV WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
-ENV WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
-ENV WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
-ENV WORDPRESS_TABLE_PREFIX=${WP_TABLE_PREFIX:-wp_}
-ENV WORDPRESS_DEBUG=${WP_DEBUG:-0}
-
-# Use secrets for sensitive information
-RUN --mount=type=secret,id=wp_admin_pass \
-    --mount=type=secret,id=wp_user_pass \
-    echo "Secrets loaded"
-
-# Expose the WordPress port
+# Expose the PHP-FPM port
 EXPOSE 9000
 
-# Start Apache
-CMD ["apache2-foreground"]
-
-
-RUN apt-get update && apt-get install -y \
-    php-fpm \
-    php-mysql \
-    php-curl \
-    php-gd \
-    php-intl \
-    php-mbstring \
-    php-soap \
-    php-xml \
-    php-xmlrpc \
-    php-zip \
-    wget \
-    mariadb-client \
-    vim 
-
-RUN mkdir -p /run/php
-RUN mkdir -p /var/www/html && chown -R www-data:www-data /var/www/html
-
-RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x wp-cli.phar && \
-    mv wp-cli.phar /usr/local/bin/wp
-
-# COPY ./conf/wp-config.php /var/www/html
-
-COPY ./conf/www.conf /etc/php/7.3/fpm/pool.d/
-COPY ./tools/setup.sh ./
-
-RUN chmod +x /setup.sh
-
-# EXPOSE  9000
-
-ENTRYPOINT [ "sh", "/setup.sh" ]
+# Start PHP-FPM
+CMD ["php-fpm -F"]
