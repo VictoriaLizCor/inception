@@ -46,7 +46,7 @@ FROM debian:bullseye
 # Install necessary packages
 RUN apt-get update -qq && \
     apt-get install -y -qq --no-install-recommends \
-    php-fpm php-mysql && \
+    php-fpm php-mysql mariadb-client && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the initialized WordPress files from the builder stage

@@ -116,6 +116,7 @@ clean_host:
 		printf "$(LF)$(P_RED)  ❗  Removing host entry for $(P_YELLOW)${USER}.42.fr$(P_BLUE)$(FG_TEXT)"; \
 		sudo sed -i "/127.0.0.1 ${USER}.42.fr/d" /etc/hosts; \
 	fi
+	@printf "$(LF)$(FG_TEXT)"; \
 
 info:
 	@echo GIT_REPO:  $(CYAN) $(GIT_REPO) $(E_NC)

@@ -32,7 +32,7 @@ FROM debian:bullseye
 
 RUN apt-get update -qq && \
     apt-get install -y -qq --no-install-recommends sudo openssl \
-    ca-certificates passwd curl libaio1 libpam0g && \
+    ca-certificates passwd curl libaio1 libpam0g netcat && \
     curl -L -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup -o mariadb_repo_setup && \
     chmod +x mariadb_repo_setup && \
     ./mariadb_repo_setup --mariadb-server-version=10.5 && \
