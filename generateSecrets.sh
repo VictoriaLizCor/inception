@@ -1,8 +1,8 @@
-#!/bash
+#!/bin/bash
 
-if [ -f srcs/.env ]; then
-	exit 0
-fi
+# if [ -f srcs/.env ]; then
+# 	exit 0
+# fi
 # Prompt for the decryption key
 echo 
 # read -sp "Enter decryption key:" DECRYPTION_KEY # uncomment
@@ -22,9 +22,7 @@ fi
 
 # sleep 1 
 # Load environment variables from .env file
-set -a
-[ -f srcs/.env ] && . srcs/.env
-set +a
+export $(grep -v '^#' srcs/.env | xargs)
 
 # Create secret files
 echo "$MYSQL_ROOT_PASSWORD" > secrets/db_root_password.txt
@@ -32,7 +30,7 @@ echo "$MYSQL_PASSWORD" > secrets/db_password.txt
 # echo "$WORDPRESS_ADMIN_PASSWORD" > secrets/wp_admin_password.txt
 # echo "$WORDPRESS_USER_PASSWORD" > secrets/wp_user_password.txt
 
-chmod 600 secrets/db_root_password.txt secrets/db_password.txt secrets/wp_user_password.txt
+chmod 600 secrets/db_root_password.txt secrets/db_password.txt 
 # Create credentials.txt file
 cat <<EOF > secrets/credentials.txt
 MYSQL_DATABASE=$MYSQL_DATABASE
@@ -50,6 +48,7 @@ SECURE_AUTH_SALT=$SECURE_AUTH_SALT
 LOGGED_IN_SALT=$LOGGED_IN_SALT
 NONCE_SALT=$NONCE_SALT
 EOF
+chmod 600 secrets/credentials.txt
 
 echo -e "\nContent: \n" && tree ./
 echo

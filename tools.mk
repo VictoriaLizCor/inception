@@ -57,8 +57,11 @@ rm_docker_group:
 	@sudo systemctl restart docker
 
 encrypt:
-	@read -p "Please enter some input: " user_input; \
-	openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env -out srcs/.env.enc -k $$user_input
+	@bash -c ' \
+    read -sp "Please enter some input: " user_input; \
+    echo; \
+    openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env.tmp -out srcs/.env.enc -k "$$user_input" \
+    '
 
 # #-------------------- DOCKER isntall ----------------------------#
 install_docker:
