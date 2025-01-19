@@ -48,7 +48,25 @@ if wp config create --allow-root --dbhost="$DB_HOST" \
 	--dbpass=${MYSQL_PASSWORD} ; then
 	echo "WordPress 'wp-config.php' created successfully"
 else
-	echo "Failed to create WordPress 'wp-config.php'"
+	echoTo github.com:VictoriaLizCor/inception.git
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'github.com:VictoriaLizCor/inception.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+ git push failed, setting upstream branch 
+To github.com:VictoriaLizCor/inception.git
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'github.com:VictoriaLizCor/inception.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+ git push --set-upstream failed with error 
+make: *** [tools.mk:27: gPush] Error 1
+
+ "Failed to create WordPress 'wp-config.php'"
 fi
 # wp config create --allow-root \
 # 	--dbname=${MYSQL_DATABASE} \
