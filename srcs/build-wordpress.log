@@ -1,0 +1,114 @@
+#0 building with "default" instance using docker driver
+
+#1 [wordpress internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.49kB done
+#1 DONE 0.0s
+
+#2 [wordpress internal] load .dockerignore
+#2 transferring context: 32B done
+#2 DONE 0.0s
+
+#3 [wordpress internal] load metadata for docker.io/library/debian:bullseye
+#3 DONE 0.2s
+
+#3 [wordpress internal] load metadata for docker.io/library/debian:bullseye
+#3 DONE 0.2s
+
+#4 [wordpress builder 1/8] FROM docker.io/library/debian:bullseye@sha256:e5bfb7364038fd100c2faebdd674145bd1bc758a57f3c67023cced99d0eff0f7
+#4 DONE 0.0s
+
+#5 [wordpress stage-1 2/8] RUN apt-get update -qq &&     apt-get install -y -qq --no-install-recommends     php7.4-fpm php7.4-mysql mariadb-client &&     rm -rf /var/lib/apt/lists/*
+#5 CACHED
+
+#6 [wordpress builder 2/8] RUN apt-get update -qq &&     apt-get install -y -qq --no-install-recommends     php7.4-fpm php7.4-mysql php7.4-common php7.4-mbstring php7.4-xml php7.4-curl php7.4-gd php7.4-intl php7.4-zip     gettext-base sudo openssl curl wget unzip ca-certificates mariadb-client &&     rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [wordpress builder 3/8] RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar &&     chmod +x wp-cli.phar &&     mv wp-cli.phar /usr/local/bin/wp
+#7 CACHED
+
+#8 [wordpress internal] load build context
+#8 transferring context: 3.54kB done
+#8 DONE 0.0s
+
+#9 [wordpress builder 4/8] RUN mkdir -p /run/php var/www/html &&     chown -R www-data:www-data /var/www/html
+#9 DONE 0.3s
+
+#10 [wordpress builder 5/8] COPY ./conf/www.cnf /etc/php/7.4/fpm/pool.d/www.conf
+#10 DONE 0.1s
+
+#11 [wordpress builder 6/8] COPY ./conf/wp-config.php /wp-config.php.template
+#11 DONE 0.1s
+
+#12 [wordpress builder 7/8] COPY ./tools/wp_install.sh /usr/bin/wp_install.sh
+#12 DONE 0.1s
+
+#13 [wordpress builder 8/8] RUN --mount=type=secret,id=credentials 	echo "Running wp_install.sh script" && 	chmod +x /usr/bin/wp_install.sh && 	/usr/bin/wp_install.sh
+#13 0.241 Running wp_install.sh script
+#13 0.287 WORDPRESS_USER=Guest
+#13 0.287 NONCE_SALT=afF# MbDy-i>d}%H+Pnn^ H{S$:bM^0r>44qmequ%Hy{W?-- 9yo.e&gVYeQ5N[q
+#13 0.287 HOSTNAME=lilizarr.42.fr
+#13 0.287 NONCE_KEY=~x352s1E0J|4mU?*V,,P{=]4b3wOp+FNH-]ekDzlHQ?lb}:_yAv}< !78}g@-Rs.
+#13 0.287 AUTH_SALT=);2hz3Rp+3Y~gS@lyr#|c%?dn;J@Ioj2gqAE B%zJb&-.5Mp:0ehJ%2O;!hZw*d=
+#13 0.287 WORDPRESS_URL=lilizarr.42.fr
+#13 0.287 WORDPRESS_ADMIN_USER=SuperUser
+#13 0.287 PWD=/
+#13 0.287 MYSQL_ROOT_PASSWORD=root42
+#13 0.287 MYSQL_PASSWORD=lilizarr123
+#13 0.287 WORDPRESS_USER_PASSWORD=Guest123
+#13 0.287 WORDPRESS_ADMIN_PASSWORD=SuperUser42
+#13 0.287 MYSQL_USER=lilizarr
+#13 0.287 HOME=/root
+#13 0.287 SECURE_AUTH_KEY=9SXLVKH!K_IIDr:E}uX=-%ax0!<i4A.u=#@(d|S+yJ(_-wCkdng::Ac];5iO!sYN
+#13 0.287 LOGGED_IN_SALT=|([6B-Ba$8eN`+e}em_8~tFH(^iagP/2+L!,^*hTxO_k?4n K:QRoYMesxAY &$J
+#13 0.287 SECURE_AUTH_SALT=Vk.O{^k< L^IIyAT2^*W7[*X(>H>m`}J[>ww^`cG- I+v:O?k56PC]TTkHe@?c+g
+#13 0.287 TABLE_PREFIX=wp_
+#13 0.287 WORDPRESS_ADMIN_EMAIL=SuperUser@lilizarr.42.fr
+#13 0.287 AUTH_KEY=+=;_zCjALJ%ZN~$u9}iFKKrW|Y.u1!Y6-vY##0Th3G6^3]oE&F=w+8LQ| |HQjUy
+#13 0.287 DB_HOST=mariadb
+#13 0.287 USER=lilizarr
+#13 0.287 DOMAIN_NAME=lilizarr.42.fr
+#13 0.287 SHLVL=1
+#13 0.287 MYSQL_DATABASE=db
+#13 0.287 LOGGED_IN_KEY=sO9#Ucf&y8Ps3u+idwH)2,YnS:`yHD{ce8!1L.qj{+uvQ-U5IKPq8w~t<J9#O/>+
+#13 0.287 WORDPRESS_USER_EMAIL=Guest@lilizarr.42.fr
+#13 0.287 WORDPRESS_TITLE=inception
+#13 0.287 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+#13 0.287 _=/usr/bin/env
+#13 0.288 Contents of /var/www/html/wp-config.php:
+#13 0.288 Waiting for MariaDB to be ready...
+#13 0.291 mysqladmin: connect to server at 'localhost' failed
+#13 0.291 error: 'Can't connect to local MySQL server through socket '/run/mysqld/mysqld.sock' (2)'
+#13 0.291 Check that mysqld is running and that the socket: '/run/mysqld/mysqld.sock' exists!
+#13 0.735 Downloading WordPress 6.7.1 (en_US)...
+#13 5.149 md5 hash verified: fae7bae13a158496ab884b6cdb0c5c03
+#13 5.979 Success: WordPress downloaded.
+#13 6.379 Downloading WordPress...
+#13 6.511 Error: WordPress files seem to already be present here.
+#13 6.517 ls: cannot access 'wp-config.php': No such file or directory
+#13 6.517 Configuring WordPress...
+#13 6.610 PHP Warning:  mysqli_real_connect(): php_network_getaddresses: getaddrinfo failed: Temporary failure in name resolution in phar:///usr/local/bin/wp/vendor/wp-cli/config-command/src/Config_Command.php on line 234
+#13 6.611 Error: Database connection error (2002) php_network_getaddresses: getaddrinfo failed: Temporary failure in name resolution
+#13 6.614 /usr/bin/wp_install.sh: line 51: _error: command not found
+#13 6.616 Installing WordPress...
+#13 6.703 Error: 'wp-config.php' not found.
+#13 6.703 Either create one manually or use `wp config create`.
+#13 6.707 WP was successfully installed
+#13 6.872 Error: 'wp-config.php' not found.
+#13 6.872 Either create one manually or use `wp config create`.
+#13 6.876 Error: Failed to create additional WordPress user
+#13 ERROR: executor failed running [/bin/sh -c echo "Running wp_install.sh script" && 	chmod +x /usr/bin/wp_install.sh && 	/usr/bin/wp_install.sh]: exit code: 1
+------
+ > [wordpress builder 8/8] RUN --mount=type=secret,id=credentials 	echo "Running wp_install.sh script" && 	chmod +x /usr/bin/wp_install.sh && 	/usr/bin/wp_install.sh:
+6.610 PHP Warning:  mysqli_real_connect(): php_network_getaddresses: getaddrinfo failed: Temporary failure in name resolution in phar:///usr/local/bin/wp/vendor/wp-cli/config-command/src/Config_Command.php on line 234
+6.611 Error: Database connection error (2002) php_network_getaddresses: getaddrinfo failed: Temporary failure in name resolution
+6.614 /usr/bin/wp_install.sh: line 51: _error: command not found
+6.616 Installing WordPress...
+6.703 Error: 'wp-config.php' not found.
+6.703 Either create one manually or use `wp config create`.
+6.707 WP was successfully installed
+6.872 Error: 'wp-config.php' not found.
+6.872 Either create one manually or use `wp config create`.
+6.876 Error: Failed to create additional WordPress user
+------
+time="2025-01-19T18:25:54+01:00" level=warning msg="current commit information was not captured by the build" error="failed to get git commit: error: object file .git/objects/86/975cab1c4e04c46226d8e4cd91822c0f472d93 is empty\nerror: object file .git/objects/86/975cab1c4e04c46226d8e4cd91822c0f472d93 is empty\nerror: object file .git/objects/86/975cab1c4e04c46226d8e4cd91822c0f472d93 is empty\nfatal: loose object 86975cab1c4e04c46226d8e4cd91822c0f472d93 (stored in .git/objects/86/975cab1c4e04c46226d8e4cd91822c0f472d93) is corrupt"
+failed to solve: executor failed running [/bin/sh -c echo "Running wp_install.sh script" && 	chmod +x /usr/bin/wp_install.sh && 	/usr/bin/wp_install.sh]: exit code: 1

@@ -1,0 +1,7 @@
+#ignore Enviroment variables
+.env.tmp
+.env
+.settings
+secrets/
+.vscode 
+build.log
