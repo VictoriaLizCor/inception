@@ -19,39 +19,25 @@ services:
   #     - Inception42
   #   restart: always
 
-#   wordpress:
-#     build:
-#       context: ./requirements/wordpress
-#       dockerfile: Dockerfile
-#       args:
-#         MYSQL_DATABASE: ${MYSQL_DATABASE}
-#         MYSQL_USER: ${MYSQL_USER}
-#       secrets:
-#         - db_root_pass
-#         - db_user_pass
-#     container_name: wordpress
-#     environment:
-#       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
-#       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
-#       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-#       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
-#       WORDPRESS_TABLE_PREFIX: ${WP_TABLE_PREFIX:-wp_}
-#       WORDPRESS_DEBUG: ${WP_DEBUG:-0}
-#       WORDPRESS_CONFIG_EXTRA: |
-#         define('WP_HOME', 'http://${DOMAIN_NAME}');
-#         define('WP_SITEURL', 'http://${DOMAIN_NAME}');
-#     volumes:
-#       - wp-vol:/var/www/html
-#       - wp-vol:/etc/php/7.4/fpm/pool.d/www.conf
-#     # env_file:
-#     #   - .env
-#     networks:
-#       - private
-#       - Inception42
-#     depends_on:
-#       - mariadb:
-#         condition: service_healthy
-#     restart: always
+  wordpress:
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+      secrets:
+        - credentials
+    container_name: wordpress
+    volumes:
+      - wp-vol:/var/www/html
+      - wp-vol:/etc/php/7.4/fpm/pool.d/www.conf
+    networks:
+      - private
+      - Inception42
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: always
+    environment:
+      TABLE_PREFIX: wp_
 
   mariadb:
     build:
@@ -91,19 +77,16 @@ services:
       timeout: 5s
       retries: 5
 
+
 secrets:
   db_root_pass:
     file: ../secrets/db_root_password.txt
   db_user_pass:
     file: ../secrets/db_password.txt
-  wp_admin_pass:
-    file: ../secrets/wp_admin_pass.txt
-  wp_user_pass:
-    file: ../secrets/wp_user_pass.txt
-  # ftp_user_pass:
-  #   file: ../secrets/ftp_user_pass.txt
   credentials:
     file: ../secrets/credentials.txt
+  # ftp_user_pass:
+  #   file: ../secrets/ftp_user_pass.txt
 
 volumes:
   db-vol:
@@ -131,7 +114,3 @@ networks:
     #   config:
     #     - subnet: "10.0.0.0/19"
     #       gateway: "10.0.0.1"
-
-#  configs:
-#    mariadbConfig:
-#      file: ./requirements/mariadb/conf/config.cnf

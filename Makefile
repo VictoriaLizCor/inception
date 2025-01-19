@@ -13,15 +13,43 @@ NG			:= $(SRCS)/requirements/nginx
 NAME		:= Inception
 -include tools.mk mdb.mk wp.mk
 #-------------------- RULES ----------------------------#
-all: build up showAll#up
+all: run showAll#up
 
-build: $(VOLUMES) secrets check_host
-	@printf "\n$(LF)⚙️  $(P_BLUE) Building images \n\n$(P_NC)"
-	@$(CMD) build 2>&1 | tee build.log || (echo "Build failed. Check build.log for details." && exit 1)
-#--no-cache
-	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built Docker Images! 🐳\n$(P_NC)"
-	@echo $(CYAN) "$$IMG" $(E_NC)
-	@echo "$$MANUAL" $(E_NC)
+build-mariadb: $(VOLUMES) secrets check_host
+	@set -e; \
+	printf "\n$(LF)⚙️  $(P_BLUE) Building MariaDB image \n\n$(P_NC)"; \
+	if ! $(CMD) build mariadb 2>&1 | tee build-mariadb.log; then \
+		echo "Build failed. Check build-mariadb.log for details."; \
+		exit 1; \
+	fi; \
+	printf "\n$(LF)🐳 $(P_BLUE)Successfully Built MariaDB Image! 🐳\n$(P_NC)"
+
+build-wordpress: $(VOLUMES) secrets check_host
+	@set -e; \
+	printf "\n$(LF)⚙️  $(P_BLUE) Building WordPress image \n\n$(P_NC)"; \
+	if ! $(CMD) build wordpress 2>&1 | tee build-wordpress.log; then \
+		echo "Build failed. Check build-wordpress.log for details."; \
+		exit 1; \
+	fi; \
+	printf "\n$(LF)🐳 $(P_BLUE)Successfully Built WordPress Image! 🐳\n$(P_NC)"
+
+up-mariadb:
+	@printf "$(LF)\n$(D_PURPLE)[+] Starting MariaDB container $(P_NC)\n"
+	@$(CMD) up -d mariadb
+
+up-wordpress:
+	@printf "$(LF)\n$(D_PURPLE)[+] Starting WordPress container $(P_NC)\n"
+	@$(CMD) up -d wordpress
+
+run-mariadb: build-mariadb up-mariadb 
+	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started MariaDB Container! 🚀\n$(P_NC)"
+
+run-wordpress: build-wordpress up-wordpress
+	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started WordPress Container! 🚀\n$(P_NC)"
+
+run: $(VOLUMES) secrets check_host run-mariadb run-wordpress
+	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started All Containers! 🚀\n$(P_NC)"
+
 
 $(VOLUMES): check_os
 	@printf "$(LF)\n$(P_BLUE)⚙️  Setting $(P_YELLOW)$(NAME)'s volumes$(FG_TEXT)\n"

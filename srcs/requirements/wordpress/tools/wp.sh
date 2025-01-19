@@ -60,6 +60,3 @@ if [ ! -e .firstmount ]; then
     touch .firstmount
 fi
 
-# Start PHP-FPM
-exec /usr/sbin/php-fpm82 -F
-
