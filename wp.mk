@@ -9,8 +9,14 @@ wp-credentials:
 
 
 twp:
-	@docker exec -it --user root wp bash
+	@docker exec -it --user root wordpress bash
 wpDown:
-	@$(CMD) down worpress
-	@$(CMD)  rm -f wordpress
+	@docker stop wordpress
+	@docker rm wordpress
 	@docker rmi wordpress
+check-php:
+	@docker exec wordpress curl -I http://localhost:9000 | grep "HTTP/1.1 200 OK" > /dev/null && \
+	echo "PHP-FPM service is accessible." || \
+	echo "PHP-FPM service is not accessible."
+check-nc:
+	@docker exec wordpress nc -zv wordpress 9000

@@ -52,13 +52,12 @@ services:
   #   restart: always
 
   wordpress:
-    build: ./requirements/wordpress
-      
-    # build:
-    #   context: ./requirements/wordpress
-    #   dockerfile: Dockerfile
-    #   secrets:
-    #     - credentials
+    # build: ./requirements/wordpress
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+      secrets:
+        - credentials
       # network: host
     image: wordpress
     hostname: wordpress
@@ -68,8 +67,13 @@ services:
     networks:
       - Inception42
     #   - private
-    secrets:
-      - credentials
+    # secrets:
+    #   - credentials
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "wordpress", "3306"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
       mariadb:
         condition: service_healthy

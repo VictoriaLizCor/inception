@@ -40,7 +40,7 @@ up-wordpress:
 run-mariadb: build-mariadb up-mariadb 
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started MariaDB Container! 🚀\n$(P_NC)"
 
-run-wordpress: build-wordpress up-wordpress
+run-wordpress: build-wordpress up-wordpress 
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started WordPress Container! 🚀\n$(P_NC)"
 
 run: $(VOLUMES) secrets check_host run-mariadb run-wordpress
