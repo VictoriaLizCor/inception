@@ -19,11 +19,6 @@ if [ -z "$MYSQL_ROOT_PASSWORD" ] || [ -z "$MYSQL_DATABASE" ] || [ -z "$MYSQL_USE
     exit 1
 fi
 
-# Set passwords for root and mysql users
-echo "Setting passwords for root and mysql users"
-echo "$MYSQL_ROOT_PASSWORD"
-echo "$MYSQL_PASSWORD"
-
 # useradd -ms /bin/bash mysql && echo "mysql:${MYSQL_PASSWORD}" | chpasswd && adduser mysql sudo
 
 echo "root:${MYSQL_ROOT_PASSWORD}" | chpasswd

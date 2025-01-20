@@ -10,3 +10,7 @@ wp-credentials:
 
 twp:
 	@docker exec -it --user root wp bash
+wpDown:
+	@$(CMD) down worpress
+	@$(CMD)  rm -f wordpress
+	@docker rmi wordpress

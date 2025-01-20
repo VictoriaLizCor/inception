@@ -1,83 +1,3 @@
-services:
-  # nginx:
-  #   build:
-  #     context: requirements/nginx
-  #     dockerfile: Dockerfile
-  #   container_name: nginx
-  #   ports:
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/config.conf
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     DOMAIN_NAME: ${DOMAIN_NAME}
-  #     HOSTNAME: ${HOSTNAME}
-  #   depends_on:
-  #     - wordpress
-  #   networks:
-  #     - Inception42
-  #   restart: always
-
-  wordpress:
-    build:
-      context: ./requirements/wordpress
-      dockerfile: Dockerfile
-      secrets:
-        - credentials
-    container_name: wordpress
-    volumes:
-      - wp-vol:/var/www/html
-    networks:
-      - Inception42
-    #   - private
-    depends_on:
-      mariadb:
-        condition: service_healthy
-    restart: always
-    environment:
-      TABLE_PREFIX: wp_
-
-  mariadb:
-    build:
-      context: ./requirements/mariadb
-      dockerfile: Dockerfile
-      args:
-        MYSQL_DATABASE: ${MYSQL_DATABASE}
-        MYSQL_USER: ${MYSQL_USER}
-      secrets:
-        - db_root_pass
-        - db_user_pass
-    container_name: mariadb
-    environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_TCP_PORT: ${DB_PORT}
-    ports:
-      - "${DB_PORT}:3306"
-    volumes:
-      - db-vol:/var/lib/mysql
-    networks:
-      - Inception42
-    #   - private
-    restart: unless-stopped
-    stdin_open: true
-    tty: true
-    privileged: true
-    security_opt:
-      - no-new-privileges 
-    cap_add:
-      - SYS_ADMIN
-      - SETGID
-      - SETUID
-      - DAC_OVERRIDE
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-
 secrets:
   db_root_pass:
     file: ../secrets/db_root_password.txt
@@ -107,9 +27,101 @@ volumes:
 
 networks:
   Inception42:
-    name: ${NETWORK_NAME}
     driver: bridge
-  private:
+    name: ${NETWORK_NAME}
+
+services:
+  # nginx:
+  #   build:
+  #     context: requirements/nginx
+  #     dockerfile: Dockerfile
+  #   container_name: nginx
+  #   ports:
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/config.conf
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     DOMAIN_NAME: ${DOMAIN_NAME}
+  #     HOSTNAME: ${HOSTNAME}
+  #   depends_on:
+  #     - wordpress
+  #   networks:
+  #     - Inception42
+  #   restart: always
+
+  wordpress:
+    build: ./requirements/wordpress
+      
+    # build:
+    #   context: ./requirements/wordpress
+    #   dockerfile: Dockerfile
+    #   secrets:
+    #     - credentials
+      # network: host
+    image: wordpress
+    hostname: wordpress
+    container_name: wordpress
+    volumes:
+      - wp-vol:/var/www/html
+    networks:
+      - Inception42
+    #   - private
+    secrets:
+      - credentials
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      TABLE_PREFIX: wp_
+
+  mariadb:
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+      args:
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_USER: ${MYSQL_USER}
+      secrets:
+        - db_root_pass
+        - db_user_pass
+    image: mariadb
+    container_name: mariadb
+    hostname: mariadb
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_TCP_PORT: ${DB_PORT}
+    ports:
+      - "${DB_PORT}:3306"
+    volumes:
+      - db-vol:/var/lib/mysql
+    networks:
+      - Inception42
+    #   - private
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    privileged: true
+    security_opt:
+      - no-new-privileges 
+    cap_add:
+      - SYS_ADMIN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
+      # test: ["CMD", "nc", "-zv", "mariadb", "3306"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+
+  # private:
     # ipam:
     #   config:
     #     - subnet: "10.0.0.0/19"

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+ls /run/secrets
 # Load secrets
 if [ -f /run/secrets/credentials ]; then
     while IFS='=' read -r key value; do
@@ -14,7 +14,6 @@ else
     exit 1
 fi
 # Ensure TABLE_PREFIX is set
-export TABLE_PREFIX=${TABLE_PREFIX:-wp_}
 
 env
 # Substitute environment variables in wp-config.php template
@@ -23,90 +22,99 @@ env
 #     exit 1
 # fi
 
+# wget https://wordpress.org/latest.tar.gz
+# tar -xzf latest.tar.gz
+# cp wordpress/wp-config-sample.php wordpress/wp-config.php
+# pwd
 ## Change to the WordPress directory
 cd /var/www/html
 echo "Contents of /var/www/html/wp-config.php:"
-# cat /var/www/html/wp-config.php
+cat /var/www/html/wp-config.php
 # Wait for MariaDB to be ready
-echo "Waiting for MariaDB to be ready..."
-mysqladmin -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" status
-
+# echo "Waiting for MariaDB to be ready..."
+echo -e "##################################" 
+date
+nc -zv mariadb 3306
+# mysqladmin -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" status
+# mysqladmin ping -h localhost -u"mysql" -p"${MYSQL_PASSWORD}"
 # mysqladmin ping -h"${DB_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}"
 # until mysqladmin ping -h"${DB_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}"; do #--silent; do
 #     echo "Waiting for database connection..."
 #     sleep 5
 # done
 # Install WordPress
-wp core download --allow-root
 echo "Downloading WordPress..."
+# mv /wordpress/* /var/www/html
+# mv wp-config.php wp-config.php.tmp
 wp core download --allow-root
+mv /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
+# echo "Configuring WordPress..."
+wp config set --allow-root DB_NAME "$MYSQL_DATABASE"
+wp config set --allow-root DB_USER "$MYSQL_USER"
+wp config set --allow-root DB_PASSWORD "$MYSQL_PASSWORD"
+wp config set --allow-root DB_HOST "$DB_HOST"
+wp config set --allow-root AUTH_KEY "${AUTH_KEY}"
+wp config set --allow-root SECURE_AUTH_KEY "${SECURE_AUTH_KEY}"
+wp config set --allow-root LOGGED_IN_KEY "${LOGGED_IN_KEY}"
+wp config set --allow-root NONCE_KEY "${NONCE_KEY}"
+wp config set --allow-root AUTH_SALT "${AUTH_SALT}"
+wp config set --allow-root SECURE_AUTH_SALT "${SECURE_AUTH_SALT}"
+wp config set --allow-root LOGGED_IN_SALT "${LOGGED_IN_SALT}"
+wp config set --allow-root NONCE_SALT "${NONCE_SALT}"
 
-echo "Configuring WordPress..."
-# mv /var/www/html/wp-config.php /var/www/html/wp-config.php.bak
-if wp config create --allow-root --dbhost="$DB_HOST" \
-	--dbname="$MYSQL_DATABASE" --dbuser="$MYSQL_USER" \
-	--dbpass=${MYSQL_PASSWORD} ; then
-	echo "WordPress 'wp-config.php' created successfully"
-else
-	echoTo github.com:VictoriaLizCor/inception.git
- ! [rejected]        main -> main (non-fast-forward)
-error: failed to push some refs to 'github.com:VictoriaLizCor/inception.git'
-hint: Updates were rejected because the tip of your current branch is behind
-hint: its remote counterpart. Integrate the remote changes (e.g.
-hint: 'git pull ...') before pushing again.
-hint: See the 'Note about fast-forwards' in 'git push --help' for details.
- git push failed, setting upstream branch 
-To github.com:VictoriaLizCor/inception.git
- ! [rejected]        main -> main (non-fast-forward)
-error: failed to push some refs to 'github.com:VictoriaLizCor/inception.git'
-hint: Updates were rejected because the tip of your current branch is behind
-hint: its remote counterpart. Integrate the remote changes (e.g.
-hint: 'git pull ...') before pushing again.
-hint: See the 'Note about fast-forwards' in 'git push --help' for details.
- git push --set-upstream failed with error 
-make: *** [tools.mk:27: gPush] Error 1
+# echo -e "################################## first :$WORDPRESS_ADMIN_USER ,  $WORDPRESS_ADMIN_PASSWORD ################################# \n"
+cat wp-config.php
+# wp core install --url="https://$DOMAIN_NAME" --title="$WP_TITLE" --admin_user="$WORDPRESS_ADMIN_USER" --admin_password="$WORDPRESS_ADMIN_PASSWORD" --admin_email="$WORDPRESS_ADMIN_EMAIL" --allow-root
+# echo -e "################################## second : $WORDPRESS_USER , $WORDPRESS_USER_PASSWORD  ################################# \n"
+# wp user create "$WORDPRESS_USER" "$WORDPRESS_USER_EMAIL" --user_pass="$WORDPRESS_USER_PASSWORD" --role="subscriber" --allow-root
 
- "Failed to create WordPress 'wp-config.php'"
-fi
-# wp config create --allow-root \
+
+# if wp config create --allow-root --dbhost="$DB_HOST" \
+# 	--dbname="$MYSQL_DATABASE" --dbuser="$MYSQL_USER" \
+# 	--dbpass=${MYSQL_PASSWORD} ; then
+# 	echo "WordPress 'wp-config.php' created successfully"
+# else
+# 	"Failed to create WordPress 'wp-config.php'"
+# fi
+# if wp config create --allow-root \
 # 	--dbname=${MYSQL_DATABASE} \
 # 	--dbuser=${MYSQL_USER} \
 # 	--dbpass=${MYSQL_PASSWORD} \
-# 	--dbhost=${DB_HOST} \
-# 	--dbcharset="utf8mb4"
-
+# 	--dbhost=${DB_HOST}:3306 \
+#     --dbprefix=${TABLE_PREFIX} \
+# 	--dbcharset="utf8mb4"  ; then
+# 	echo "WordPress 'wp-config.php' created successfully"
+# else
+# 	"Failed to create WordPress 'wp-config.php'"
+# fi	
+echo -e "##################################"
 echo "Installing WordPress..."
-wp core install --allow-root \
-	--url=https://${DOMAIN_NAME} \
-	--title="WordPress Site" \
-	--admin_user=${WORDPRESS_ADMIN_USER} \
-	--admin_password=${WORDPRESS_ADMIN_PASSWORD} \
-	--admin_email=${WORDPRESS_ADMIN_EMAIL}
-# if ! wp core install --path=/var/www/html --url="$WORDPRESS_URL" --title="$WORDPRESS_TITLE" \
-#     --admin_user="$WORDPRESS_ADMIN_USER" --admin_password="$WORDPRESS_ADMIN_PASSWORD" \
-#     --admin_email="$WORDPRESS_ADMIN_EMAIL" --skip-email --allow-root; then
-#     echo "Error: Failed to install WordPress"
-#     exit 1
-# fi
+
+echo -e "##################################"
+if ! wp core install --url="https://$DOMAIN_NAME" --title="$WP_TITLE" --admin_user="$WORDPRESS_ADMIN_USER" --admin_password="$WORDPRESS_ADMIN_PASSWORD" --admin_email="$WORDPRESS_ADMIN_EMAIL" --allow-root; then
+    echo "Error: Failed to install WordPress"
+    exit 1
+fi
 
 echo "WP was successfully installed"
-
+echo -e "##################################"
 # Create additional WordPress user if it does not exist
 if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
-    if ! wp user create "$WORDPRESS_USER" "$WORDPRESS_USER_EMAIL" --role=author --user_pass="$WORDPRESS_USER_PASSWORD" --allow-root; then
+    if ! wp user create "$WORDPRESS_USER" "$WORDPRESS_USER_EMAIL" --user_pass="$WORDPRESS_USER_PASSWORD" --role="subscriber" --allow-root; then
         echo "Error: Failed to create additional WordPress user"
         exit 1
-    else
-        wp option update blog_public 0 --allow-root # Restrict access from search engines
-        wp rewrite structure '/%postname%/' --allow-root # Set permalink structure
+	fi
+	wp option update blog_public 0 --allow-root # Restrict access from search engines
+	wp rewrite structure '/%postname%/' --allow-root # Set permalink structure
 
-        # Delete unnecessary plugins and themes
-        wp plugin delete hello --allow-root
-        wp theme delete twentynineteen twentytwenty --allow-root
+	# Delete unnecessary plugins and themes
+	wp plugin delete hello --allow-root
+	wp theme delete twentynineteen twentytwenty --allow-root
 
-        # Install necessary plugins
-        wp plugin install wp-super-cache --activate --allow-root
+	# Install necessary plugins
+	wp plugin install wp-super-cache --activate --allow-root
 
-        echo "WordPress setup completed successfully!"
-    fi
+	echo "WordPress setup completed successfully!"
 fi
+rm /run/secrets/credentials
+php-fpm7.4 -F

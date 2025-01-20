@@ -12,6 +12,7 @@ WP			:= $(SRCS)/requirements/wordpress
 NG			:= $(SRCS)/requirements/nginx
 NAME		:= Inception
 -include tools.mk mdb.mk wp.mk
+# export DOCKER_BUILDKIT=1
 #-------------------- RULES ----------------------------#
 all: run showAll#up
 
@@ -23,9 +24,9 @@ build-mariadb: $(VOLUMES) secrets check_host
 	@bash -c 'set -o pipefail; $(CMD) build mariadb 2>&1 | tee build-mariadb.log || { echo "Error: Docker compose build failed. Check build-wordpress.log for details."; exit 1; }'
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built MariaDB Image! 🐳\n$(P_NC)"
 
-build-wordpress: $(VOLUMES) secrets check_host
+build-wordpress: #wpDown #$(VOLUMES) secrets check_host
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building WordPress image \n\n$(P_NC)";
-	@bash -c 'set -o pipefail; $(CMD) build wordpress 2>&1 | tee build-wordpress.log || { echo "Error: Docker compose build failed. Check build-wordpress.log for details."; exit 1; }'
+	@bash -c 'set -o pipefail; $(CMD) build wordpress --no-cache 2>&1 | tee build-wordpress.log || { echo "Error: Docker compose build failed. Check build-wordpress.log for details."; exit 1; }'
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built WordPress Image! 🐳\n$(P_NC)"
 
 up-mariadb:
