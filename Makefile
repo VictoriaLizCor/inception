@@ -16,36 +16,104 @@ NAME		:= Inception
 #-------------------- RULES ----------------------------#
 all: run showAll#up
 
-test: 
-	@$(CMD) up -d wp
+# Function to check if a container is running
+define check_container_running
+	@docker ps -q -f name=$(1) | grep -q . && echo "Container $(1) is running." || echo "Container $(1) is not running."
+endef
 
+# Function to check if a container exists
+define check_container_exists
+	@docker ps -aq -f name=$(1) | grep -q . && echo "Container $(1) exists." || echo "Container $(1) does not exist."
+endef
+
+# Function to remove a container if it exists
+define remove_container
+	@docker ps -aq -f name=$(1) | grep -q . && docker rm -f $(1) && echo "Removed container $(1)." || echo "Container $(1) does not exist."
+endef
+
+# Function to remove an image if it exists
+define remove_image
+	@docker images -q $(1) | grep -q . && docker rmi -f $(1) && echo "Removed image $(1)." || echo "Image $(1) does not exist."
+endef
+
+# Build Nginx image
+build-nginx: $(VOLUMES) secrets check_host
+	@printf "\n$(LF)⚙️  $(P_BLUE) Building Nginx image \n\n$(P_NC)";
+	@bash -c 'set -o pipefail; $(CMD) build nginx 2>&1 | tee build-nginx.log || { echo "Error: Docker compose build failed. Check build-nginx.log for details."; exit 1; }'
+	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built Nginx Image! 🐳\n$(P_NC)"
+
+# Start Nginx container
+up-nginx:
+	@printf "$(LF)\n$(D_PURPLE)[+] Starting Nginx container $(P_NC)\n"
+	@$(CMD) up -d nginx
+
+# Check, remove, build, and start Nginx container
+run-nginx: check-nginx remove-nginx build-nginx up-nginx
+	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started Nginx Container! 🚀\n$(P_NC)"
+
+# Check if Nginx container is running or exists
+check-nginx:
+	$(call check_container_running,nginx)
+	$(call check_container_exists,nginx)
+
+# Remove Nginx container and image if they exist
+remove-nginx:
+	$(call remove_container,nginx)
+	$(call remove_image,nginx)
+
+# Build MariaDB image
 build-mariadb: $(VOLUMES) secrets check_host
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building MariaDB image \n\n$(P_NC)";
-	@bash -c 'set -o pipefail; $(CMD) build mariadb 2>&1 | tee build-mariadb.log || { echo "Error: Docker compose build failed. Check build-wordpress.log for details."; exit 1; }'
+	@bash -c 'set -o pipefail; $(CMD) build mariadb 2>&1 | tee build-mariadb.log || { echo "Error: Docker compose build failed. Check build-mariadb.log for details."; exit 1; }'
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built MariaDB Image! 🐳\n$(P_NC)"
 
-build-wordpress: #wpDown #$(VOLUMES) secrets check_host
-	@printf "\n$(LF)⚙️  $(P_BLUE) Building WordPress image \n\n$(P_NC)";
-	@bash -c 'set -o pipefail; $(CMD) build wordpress --no-cache 2>&1 | tee build-wordpress.log || { echo "Error: Docker compose build failed. Check build-wordpress.log for details."; exit 1; }'
-	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built WordPress Image! 🐳\n$(P_NC)"
-
+# Start MariaDB container
 up-mariadb:
 	@printf "$(LF)\n$(D_PURPLE)[+] Starting MariaDB container $(P_NC)\n"
 	@$(CMD) up -d mariadb
 
+# Check, remove, build, and start MariaDB container
+run-mariadb: check-mariadb remove-mariadb build-mariadb up-mariadb
+	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started MariaDB Container! 🚀\n$(P_NC)"
+
+# Check if MariaDB container is running or exists
+check-mariadb:
+	$(call check_container_running,mariadb)
+	$(call check_container_exists,mariadb)
+
+# Remove MariaDB container and image if they exist
+remove-mariadb:
+	$(call remove_container,mariadb)
+	$(call remove_image,mariadb)
+
+# Build WordPress image
+build-wordpress: $(VOLUMES) secrets check_host
+	@printf "\n$(LF)⚙️  $(P_BLUE) Building WordPress image \n\n$(P_NC)";
+	@bash -c 'set -o pipefail; $(CMD) build wordpress 2>&1 | tee build-wordpress.log || { echo "Error: Docker compose build failed. Check build-wordpress.log for details."; exit 1; }'
+	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built WordPress Image! 🐳\n$(P_NC)"
+
+# Start WordPress container
 up-wordpress:
 	@printf "$(LF)\n$(D_PURPLE)[+] Starting WordPress container $(P_NC)\n"
 	@$(CMD) up -d wordpress
 
-run-mariadb: build-mariadb up-mariadb 
-	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started MariaDB Container! 🚀\n$(P_NC)"
-
-run-wordpress: build-wordpress up-wordpress 
+# Check, remove, build, and start WordPress container
+run-wordpress: check-wordpress remove-wordpress build-wordpress up-wordpress
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started WordPress Container! 🚀\n$(P_NC)"
 
-run: $(VOLUMES) secrets check_host run-mariadb run-wordpress
-	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started All Containers! 🚀\n$(P_NC)"
+# Check if WordPress container is running or exists
+check-wordpress:
+	$(call check_container_running,wordpress)
+	$(call check_container_exists,wordpress)
 
+# Remove WordPress container and image if they exist
+remove-wordpress:
+	$(call remove_container,wordpress)
+	$(call remove_image,wordpress)
+
+# Build and start all containers
+run: $(VOLUMES) secrets check_host run-mariadb run-wordpress run-nginx
+	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started All Containers! 🚀\n$(P_NC)"
 
 $(VOLUMES): check_os
 	@printf "$(LF)\n$(P_BLUE)⚙️  Setting $(P_YELLOW)$(NAME)'s volumes$(FG_TEXT)\n"

@@ -31,44 +31,47 @@ networks:
     name: ${NETWORK_NAME}
 
 services:
-  # nginx:
-  #   build:
-  #     context: requirements/nginx
-  #     dockerfile: Dockerfile
-  #   container_name: nginx
-  #   ports:
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/config.conf
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     DOMAIN_NAME: ${DOMAIN_NAME}
-  #     HOSTNAME: ${HOSTNAME}
-  #   depends_on:
-  #     - wordpress
-  #   networks:
-  #     - Inception42
-  #   restart: always
+  nginx:
+    build:
+      context: requirements/nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    image: nginx
+    volumes:
+      -  wp-vol:/var/www/html
+      -  ./requirements/nginx/ssl/:/etc/nginx/ssl/
+    ports:
+      - $NGINX_PORT:$NGINX_PORT
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      HOSTNAME: ${HOSTNAME}
+      NGINX_PORT: ${NGINX_PORT}
+    depends_on:
+      - wordpress
+    networks:
+      - ${NETWORK_NAME}
+    restart: on-failure
+    healthcheck:
+      test:
+        ["CMD", "curl", "-f", "https://localhost:443/healthcheck.html", "-k"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   wordpress:
-    # build: ./requirements/wordpress
     build:
       context: ./requirements/wordpress
       dockerfile: Dockerfile
       secrets:
         - credentials
-      # network: host
     image: wordpress
     hostname: wordpress
     container_name: wordpress
     volumes:
       - wp-vol:/var/www/html
     networks:
-      - Inception42
+      - ${NETWORK_NAME}
     #   - private
-    # secrets:
-    #   - credentials
     healthcheck:
       test: ["CMD", "nc", "-zv", "wordpress", "3306"]
       interval: 10s
@@ -103,7 +106,7 @@ services:
     volumes:
       - db-vol:/var/lib/mysql
     networks:
-      - Inception42
+      - ${NETWORK_NAME}
     #   - private
     restart: unless-stopped
     stdin_open: true

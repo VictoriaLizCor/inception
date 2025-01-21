@@ -25,6 +25,7 @@ php_admin_value[upload_max_filesize] = 64M
 php_admin_value[post_max_size] = 64M
 php_admin_value[max_execution_time] = 300
 php_admin_value[max_input_time] = 300
+php_admin_value[sendmail_path] = /usr/sbin/sendmail -t -i -f www@my.domain.com
 
 ; Logging
 access.log = /proc/self/fd/2

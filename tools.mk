@@ -57,12 +57,19 @@ rm_docker_group:
 	@sudo systemctl restart docker
 
 encrypt:
+	@rm -rf .srcs/.env
 	@bash -c ' \
-    read -sp "Please enter some input: " user_input; \
-    echo; \
-    openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env.tmp -out srcs/.env.enc -k "$$user_input" \
-    '
-
+	read -sp "Please enter some input: " user_input; \
+	echo; \
+	openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env.tmp -out srcs/.env.enc -k "$$user_input" \
+	'
+cert:
+	@echo "Generating SSL certificates..."
+	@mkdir -p srcs/requirements/nginx/ssl && \
+	export $(shell grep '^NGINX' srcs/.env | xargs) && \
+	openssl req -new -newkey rsa:4096 -nodes -keyout $$NGINX_LOCAL_KEY -out $$NGINX_LOCAL_CERT -subj "$$NGINX_OPTIONS" && sleep 1 && \
+	openssl x509 -req -days 365 -in $$NGINX_LOCAL_CERT -signkey $$NGINX_LOCAL_KEY -out srcs/requirements/nginx/ssl/nginx.crt && \
+	echo "SSL certificates generated successfully."
 # #-------------------- DOCKER isntall ----------------------------#
 install_docker:
 	@if command -v docker >/dev/null 2>&1; then \

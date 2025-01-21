@@ -20,7 +20,7 @@ RUN ls /
 FROM debian:bullseye
 RUN apt-get update -qq && \
     apt-get install -y -qq --no-install-recommends \
-    php php7.4-fpm php7.4-mysql php7.4-common php7.4-mbstring php7.4-xml php7.4-curl php7.4-gd php7.4-intl php7.4-zip netcat \
+    php php7.4-fpm php7.4-mysql php7.4-common php7.4-mbstring php7.4-xml php7.4-curl php7.4-gd php7.4-intl php7.4-zip netcat sendmail \
     gettext-base sudo openssl curl wget unzip ca-certificates mariadb-client && \
     rm -rf /var/lib/apt/lists/*
 
