@@ -39,7 +39,6 @@ services:
     image: nginx
     volumes:
       -  wp-vol:/var/www/html
-      -  ./requirements/nginx/ssl/:/etc/nginx/ssl/
     ports:
       - $NGINX_PORT:$NGINX_PORT
     environment:
@@ -53,7 +52,7 @@ services:
     restart: on-failure
     healthcheck:
       test:
-        ["CMD", "curl", "-f", "https://localhost:443/healthcheck.html", "-k"]
+        ["CMD", "curl", "-fk", "https://localhost:443/healthcheck.html"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -73,7 +72,7 @@ services:
       - ${NETWORK_NAME}
     #   - private
     healthcheck:
-      test: ["CMD", "nc", "-zv", "wordpress", "3306"]
+      test: ["CMD", "nc", "-zv", "mariadb", "3306"]
       interval: 10s
       timeout: 5s
       retries: 5

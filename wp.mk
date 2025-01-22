@@ -19,3 +19,18 @@ check-php:
 	echo "PHP-FPM service is not accessible."
 check-nc:
 	@docker exec wordpress nc -zv wordpress 9000
+wp-ping:
+	-@export $(shell grep '^MYSQL' srcs/.env | xargs) && \
+	docker exec wordpress mysqladmin ping -h"$$MYSQL_HOST" -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD"
+
+### nginx
+nglog:
+	$(CMD) logs nginx
+	docker exec -it --user root nginx bash -c "cat /var/log/nginx/error.log"
+	docker exec -it --user root nginx bash -c "cat /var/log/nginx/access.log"
+ngbash:
+	@docker exec -it --user root nginx bash
+ng-ping-maria:
+	-@export $(shell grep '^MYSQL' srcs/.env | xargs) && \
+	docker exec wordpress mysqladmin ping -h"$$MYSQL_HOST" -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD"
+ngself:

@@ -51,16 +51,6 @@ up-nginx:
 run-nginx: check-nginx remove-nginx build-nginx up-nginx
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started Nginx Container! 🚀\n$(P_NC)"
 
-# Check if Nginx container is running or exists
-check-nginx:
-	$(call check_container_running,nginx)
-	$(call check_container_exists,nginx)
-
-# Remove Nginx container and image if they exist
-remove-nginx:
-	$(call remove_container,nginx)
-	$(call remove_image,nginx)
-
 # Build MariaDB image
 build-mariadb: $(VOLUMES) secrets check_host
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building MariaDB image \n\n$(P_NC)";
@@ -76,6 +66,15 @@ up-mariadb:
 run-mariadb: check-mariadb remove-mariadb build-mariadb up-mariadb
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started MariaDB Container! 🚀\n$(P_NC)"
 
+# Check if Nginx container is running or exists
+check-nginx:
+	$(call check_container_running,nginx)
+	$(call check_container_exists,nginx)
+
+# Remove Nginx container and image if they exist
+remove-nginx:
+	$(call remove_container,nginx)
+	$(call remove_image,nginx)
 # Check if MariaDB container is running or exists
 check-mariadb:
 	$(call check_container_running,mariadb)
@@ -112,7 +111,7 @@ remove-wordpress:
 	$(call remove_image,wordpress)
 
 # Build and start all containers
-run: $(VOLUMES) secrets check_host run-mariadb run-wordpress run-nginx
+run: $(VOLUMES) secrets run-mariadb run-wordpress run-nginx
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started All Containers! 🚀\n$(P_NC)"
 
 $(VOLUMES): check_os
@@ -189,7 +188,7 @@ rm-secrets: clean_host
 		shred -u $(SRCS)/.env; \
 	fi
 
-secrets:
+secrets: #check_host
 	@chmod +x generateSecrets.sh
 	@echo $(WHITE)
 	@bash generateSecrets.sh

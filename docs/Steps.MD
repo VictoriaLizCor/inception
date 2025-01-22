@@ -636,3 +636,4 @@ The watchdog timer can be used to automatically reboot the system when it detect
 After making these changes, reboot your system to apply the new settings. The watchdog service should now monitor your system and trigger a reboot if it becomes unresponsive.
 
 If you have any specific requirements or need further assistance with the setup, feel free to ask!
+

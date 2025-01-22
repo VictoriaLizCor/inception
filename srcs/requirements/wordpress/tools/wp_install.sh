@@ -1,6 +1,5 @@
 #!/bin/bash
-ls /run/secrets
-cat /credentials
+set -x
 if [ -f /credentials ]; then
     while IFS='=' read -r key value; do
         if [[ ! $key =~ ^# && -n $key ]]; then
@@ -40,10 +39,10 @@ cd /var/www/html
 echo -e "##################################" 
 date
 nc -zv mariadb 3306
-# mysqladmin -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" status
+mysqladmin -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" status
 # mysqladmin ping -h localhost -u"mysql" -p"${MYSQL_PASSWORD}"
-# mysqladmin ping -h"${DB_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}"
-# until mysqladmin ping -h"${DB_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}"; do #--silent; do
+mysqladmin ping -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}"
+# until mysqladmin ping -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}"; do #--silent; do
 #     echo "Waiting for database connection..."
 #     sleep 5
 # done
@@ -97,8 +96,8 @@ fi
 # fi	
 echo -e "##################################"
 echo "Installing WordPress..."
-
 echo -e "##################################"
+
 if ! wp core install --url="https://$DOMAIN_NAME" --title="$WP_TITLE" --admin_user="$WORDPRESS_ADMIN_USER" --admin_password="$WORDPRESS_ADMIN_PASSWORD" --admin_email="$WORDPRESS_ADMIN_EMAIL" --allow-root; then
     echo "Error: Failed to install WordPress"
     exit 1
@@ -117,7 +116,13 @@ if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
 
 	# Delete unnecessary plugins and themes
 	wp plugin delete hello --allow-root
-	wp theme delete twentynineteen twentytwenty --allow-root
+	if wp theme is-installed twentynineteen --allow-root; then
+	wp theme delete twentynineteen --allow-root
+	fi
+
+	if wp theme is-installed twentytwenty --allow-root; then
+		wp theme delete twentytwenty --allow-root
+	fi
 
 	# Install necessary plugins
 	wp plugin install wp-super-cache --activate --allow-root
@@ -125,6 +130,5 @@ if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
 	
 fi
 echo "WordPress setup completed successfully!"
-rm /run/secrets/credentials
 rm /credentials
 php-fpm7.4 -F
