@@ -8,5 +8,7 @@ build.log
 *.log
 srcs/requirements/nginx/conf/ssl/fullchain.crt
 srcs/requirements/nginx/conf/ssl/privkey.key
+srcs/requirements/nginx/conf/ssl/
+
 privkey.key
 fullchain.crt
