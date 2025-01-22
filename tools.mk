@@ -113,7 +113,9 @@ install_docker:
 		printf "$(LF)$(P_GREEN)✅ Successfully installed Docker Compose! ✅$(P_NC)\n"; \
 	fi
 # copy files from local machine to VM with ssh
-cpy:
+cpy-host:
+	@scp -r Debian:inception ./*
+cpy-VM:
 	@scp -r ./* Debian:inception
 
 check_host:
