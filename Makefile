@@ -14,7 +14,7 @@ NAME		:= Inception
 -include tools.mk mdb.mk wp.mk
 # export DOCKER_BUILDKIT=1
 #-------------------- RULES ----------------------------#
-all: run showAll#up
+all: run showAll
 
 # Function to check if a container is running
 define check_container_running
@@ -37,7 +37,7 @@ define remove_image
 endef
 
 # Build Nginx image
-build-nginx: $(VOLUMES) secrets check_host
+build-nginx: $(VOLUMES) secrets #check_host
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building Nginx image \n\n$(P_NC)";
 	@bash -c 'set -o pipefail; $(CMD) build nginx 2>&1 | tee build-nginx.log || { echo "Error: Docker compose build failed. Check build-nginx.log for details."; exit 1; }'
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built Nginx Image! 🐳\n$(P_NC)"
@@ -52,7 +52,7 @@ run-nginx: check-nginx remove-nginx build-nginx up-nginx
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started Nginx Container! 🚀\n$(P_NC)"
 
 # Build MariaDB image
-build-mariadb: $(VOLUMES) secrets check_host
+build-mariadb: $(VOLUMES) secrets #check_host
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building MariaDB image \n\n$(P_NC)";
 	@bash -c 'set -o pipefail; $(CMD) build mariadb 2>&1 | tee build-mariadb.log || { echo "Error: Docker compose build failed. Check build-mariadb.log for details."; exit 1; }'
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built MariaDB Image! 🐳\n$(P_NC)"
@@ -86,7 +86,7 @@ remove-mariadb:
 	$(call remove_image,mariadb)
 
 # Build WordPress image
-build-wordpress: $(VOLUMES) secrets check_host
+build-wordpress: $(VOLUMES) secrets #check_host
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building WordPress image \n\n$(P_NC)";
 	@bash -c 'set -o pipefail; $(CMD) build wordpress 2>&1 | tee build-wordpress.log || { echo "Error: Docker compose build failed. Check build-wordpress.log for details."; exit 1; }'
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built WordPress Image! 🐳\n$(P_NC)"
@@ -118,7 +118,6 @@ $(VOLUMES): check_os
 	@printf "$(LF)\n$(P_BLUE)⚙️  Setting $(P_YELLOW)$(NAME)'s volumes$(FG_TEXT)\n"
 	$(call createDir,$(WP_VOL))
 	$(call createDir,$(DB_VOL))
-	@$(call createDir,./secrets)
 
 down:
 	@printf "$(LF)\n$(P_RED)[-] Phase of stopping and deleting containers $(P_NC)\n"
@@ -189,9 +188,11 @@ rm-secrets: clean_host
 	fi
 
 secrets: #check_host
+	@$(call createDir,./secrets)
 	@chmod +x generateSecrets.sh
 	@echo $(WHITE)
-	@bash generateSecrets.sh
+	@export $(shell grep '^TMP' srcs/.env.tmp | xargs) && \
+	bash generateSecrets.sh $$TMP
 	@echo $(E_NC) > /dev/null
 
 showData:
@@ -200,4 +201,4 @@ showData:
 re: fclean all
 
 
-.PHONY: all set build up down clean fclean status logs restart re showAll  check_host check_os rm-secrets remove_images remove_containers remove_volumes remove_networks prune showData secrets
+.PHONY: all set build up down clean fclean status logs restart re showAll check_os rm-secrets remove_images remove_containers remove_volumes remove_networks prune showData secrets #check_host

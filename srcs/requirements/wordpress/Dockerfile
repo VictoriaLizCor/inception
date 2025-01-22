@@ -1,21 +1,10 @@
-# # filepath: /home/lilizarr/inception/requirements/wordpress/Dockerfile
-# FROM wordpress:latest
-
-# # Install mariadb-client
-# RUN apt-get update && apt-get install -y mariadb-client
-
-# # Copy any additional configuration or scripts if needed
-# # COPY ./conf/wp-config.php /var/www/html/wp-config.php
-
-# # Set the working directory
-# WORKDIR /var/www/html
 # Stage 1: Build stage
 FROM debian:bullseye as builder
 COPY ./tools/wp.sh /usr/bin/wp.sh
 RUN chmod +x /usr/bin/wp.sh 
 RUN --mount=type=secret,id=credentials \
 	/usr/bin/wp.sh
-RUN ls /
+
 # Install necessary packages
 FROM debian:bullseye
 RUN apt-get update -qq && \

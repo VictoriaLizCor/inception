@@ -10,9 +10,9 @@ RUN env
 # Create directory for Nginx PID
 RUN mkdir -p /run/nginx 
 
-
 # Copy Nginx configuration file
 COPY ./conf/default.conf /etc/nginx/conf.d/default.conf
+
 RUN rm /etc/nginx/sites-enabled/default
 
 # Create directory for WordPress and set permissions

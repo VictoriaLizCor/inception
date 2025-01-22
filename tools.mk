@@ -57,11 +57,19 @@ rm_docker_group:
 	@sudo systemctl restart docker
 
 encrypt:
-	@rm -rf .srcs/.env
+	@rm -f srcs/.env .tmp.enc .tmp.tar.gz
+	@tar -czf .tmp.tar.gz srcs/requirements/nginx/conf/ssl srcs/.env.tmp
 	@bash -c ' \
 	read -sp "Please enter some input: " user_input; \
 	echo; \
-	openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env.tmp -out srcs/.env.enc -k "$$user_input" \
+	gpg --batch --passphrase "$$user_input" --symmetric --cipher-algo AES256 -o .tmp.enc .tmp.tar.gz '
+	@rm .tmp.tar.gz
+
+# @rm -rf .srcs/.env
+# @bash -c ' \
+# read -sp "Please enter some input: " user_input; \
+# echo; \
+# openssl enc -aes-256-cbc -salt -pbkdf2 -in srcs/.env.tmp -out srcs/.env.enc -k "$$user_input" \
 
 cert: 
 	@mkcert -key-file srcs/requirements/nginx/conf/ssl/privkey.key -cert-file srcs/requirements/nginx/conf/ssl/fullchain.crt ${USER}.42.fr
@@ -114,7 +122,8 @@ install_docker:
 	fi
 # copy files from local machine to VM with ssh
 cpy-host:
-	@scp -r Debian:inception ./*
+	@scp Debian:inception/* ./
+
 cpy-VM:
 	@scp -r ./* Debian:inception
 

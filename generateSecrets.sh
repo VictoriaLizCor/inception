@@ -6,15 +6,23 @@ fi
 # Prompt for the decryption key
 echo 
 # read -sp "Enter decryption key:" DECRYPTION_KEY # uncomment
-DECRYPTION_KEY="test123" # to be deleted0
+DECRYPTION_KEY="$1" # to be deleted
 # Decrypt the .env file
-if [ -f srcs/.env.enc ]; then
-	openssl enc -aes-256-cbc -d -salt -pbkdf2 -in srcs/.env.enc -out srcs/.env -k "$DECRYPTION_KEY"
+if [ -f .tmp.enc ]; then
+	gpg --batch --passphrase "$DECRYPTION_KEY" -o .tmp.tar.gz -d .tmp.enc
 	if [ $? -ne 0 ]; then
 		echo "Error: Decryption failed."
 		shred -u srcs/.env
 		exit 1
 	fi
+	mkdir -p .tmp_extract
+	tar -xzf .tmp.tar.gz -C .tmp_extract
+	sleep 2
+	rm .tmp.tar.gz
+	mv .tmp_extract/srcs/.env.tmp srcs/.env
+	cp -r .tmp_extract/srcs/requirements/nginx/conf/ssl srcs/requirements/nginx/conf/
+	rm -r .tmp_extract
+	# openssl enc -aes-256-cbc -d -salt -pbkdf2 -in srcs/.env.enc -out srcs/.env -k "$DECRYPTION_KEY"
 else
 	echo "Error: srcs/.env.enc file not found."
 	exit 1
@@ -24,9 +32,9 @@ fi
 # Load environment variables from .env file
 # export $(grep -v '^#' srcs/.env | xargs)
 while IFS='=' read -r key value; do
-    if [[ ! $key =~ ^# && -n $key ]]; then
-        export "$key=$(echo "$value" | sed 's/^"\(.*\)"$/\1/')"
-    fi
+	if [[ ! $key =~ ^# && -n $key ]]; then
+		export "$key=$(echo "$value" | sed 's/^"\(.*\)"$/\1/')"
+	fi
 done < srcs/.env
 
 
