@@ -56,6 +56,7 @@ echo "Downloading WordPress..."
 # mv wp-config.php wp-config.php.tmp
 if wp core is-installed --allow-root; then
     echo "WordPress is already installed."
+	wp core update
 else
 	wp core download --allow-root
 	mv /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
@@ -102,7 +103,7 @@ echo -e "##################################"
 echo "Installing WordPress..."
 echo -e "##################################"
 
-if ! wp core install --url="https://$DOMAIN_NAME" --title="$WP_TITLE" --admin_user="$WORDPRESS_ADMIN_USER" --admin_password="$WORDPRESS_ADMIN_PASSWORD" --admin_email="$WORDPRESS_ADMIN_EMAIL" --allow-root; then
+if ! wp core install --url="https://$DOMAIN_NAME" --title="$WORDPRESS_TITLE" --admin_user="$WORDPRESS_ADMIN_USER" --admin_password="$WORDPRESS_ADMIN_PASSWORD" --admin_email="$WORDPRESS_ADMIN_EMAIL" --allow-root; then
     echo "Error: Failed to install WordPress"
     exit 1
 fi
@@ -115,17 +116,16 @@ if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
         echo "Error: Failed to create additional WordPress user"
         exit 1
 	fi
+	# echo "Replacing 'http://example.com' by 'https://example.com' within the WordPress database"
+	# wp search-replace "http://example.com" "https://example.com"
 	wp option update blog_public 0 --allow-root # Restrict access from search engines
 	wp rewrite structure '/%postname%/' --allow-root # Set permalink structure
 
 	# Delete unnecessary plugins and themes
 	wp plugin delete hello --allow-root
-	if wp theme is-installed twentynineteen --allow-root; then
-	wp theme delete twentynineteen --allow-root
-	fi
 
-	if wp theme is-installed twentytwenty --allow-root; then
-		wp theme delete twentytwenty --allow-root
+	if wp theme is-installed twentytwentyfour --allow-root; then
+		wp theme delete twentytwentyfour --allow-root
 	fi
 
 	# Install necessary plugins

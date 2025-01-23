@@ -14,7 +14,12 @@ NAME		:= Inception
 -include tools.mk mdb.mk wp.mk
 # export DOCKER_BUILDKIT=1
 #-------------------- RULES ----------------------------#
-all: run showAll
+all: buildAll up showAll
+
+buildAll: $(VOLUMES) secrets
+	@printf "\n$(LF)⚙️  $(P_BLUE) Building Images \n\n$(P_NC)";
+	@bash -c 'set -o pipefail; $(CMD) build 2>&1 | tee build.log || { echo "Error: Docker compose build failed. Check build.log for details."; exit 1; }'
+	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Builted Images! 🐳\n$(P_NC)"
 
 # Function to remove a container if it exists
 define remove_container
@@ -27,7 +32,7 @@ define remove_image
 endef
 
 # Build Nginx image
-build-nginx: $(VOLUMES) secrets #check_host
+build-nginx: $(VOLUMES) secrets check_host
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building Nginx image \n\n$(P_NC)";
 	@bash -c 'set -o pipefail; $(CMD) build nginx 2>&1 | tee build-nginx.log || { echo "Error: Docker compose build failed. Check build-nginx.log for details."; exit 1; }'
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built Nginx Image! 🐳\n$(P_NC)"

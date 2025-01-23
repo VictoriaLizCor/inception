@@ -1,6 +1,5 @@
 # ---------------- MARIA DB STATUS CHECK RULES ------------------
-mariadb:
-	$(CMD) build --no-cache mariadb
+
 rmdb:
 	@docker exec -it --user root mariadb bash
 mdb:

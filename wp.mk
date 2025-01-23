@@ -21,7 +21,8 @@ check-nc:
 wp-ping:
 	-@export $(shell grep '^MYSQL' srcs/.env | xargs) && \
 	docker exec wordpress mysqladmin ping -h"$$MYSQL_HOST" -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD"; \
-	docker exec wordpress curl -f http://localhost:9000
+	docker exec wordpress nc -zv localhost 9000; \
+	docker exec wordpress curl -kf http://localhost:9000/status
 
 ### nginx
 nglog:
