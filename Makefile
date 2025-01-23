@@ -60,8 +60,8 @@ run-mariadb: remove-mariadb build-mariadb up-mariadb
 # Remove Nginx container and image if they exist
 remove-nginx:
 	@if [ -n "$$(docker ps -q -f name=nginx)" ];  then \
-		docker exec -it --user root nginx bash -c "pkill -f nginx"; \
-		docker exec -it --user root nginx bash -c "rm -rf /var/www/html" ; \
+		docker stop nginx; \
+		docker run --rm -v /home/lilizarr/data/wordpress:/var/www/html nginx bash -c "rm -rf /var/www/html/*"; \
 	fi
 	$(call remove_container,nginx)
 	$(call remove_image,nginx)
@@ -137,7 +137,7 @@ remove_containers: rm-secrets
 
 remove_volumes:
 	@printf "$(LF)$(P_RED)  ❗  Removing $(P_YELLOW)Volumes $(FG_TEXT)"
-	@rm -rf $(VOLUMES)
+	@sudo rm -rf $(VOLUMES)
 	@if [ -n "$$(docker volume ls -q)" ]; then \
 		docker volume rm $$(docker volume ls -q) > /dev/null; \
 	fi

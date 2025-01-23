@@ -46,11 +46,6 @@ COPY --from=builder /var/lib/mysql /var/lib/mysql
 # COPY --from=builder /etc/pam.d/login /etc/pam.d/login
 COPY --from=builder /etc/mysql/mariadb.conf.d/config.cnf /etc/mysql/mariadb.conf.d/config.cnf
 COPY --from=builder /usr/local/bin/pass_request.sh /usr/local/bin/pass_request.sh
-# COPY --from=builder /etc/sudoers /etc/sudoers
-# COPY --from=builder /etc/passwd /etc/passwd
-# COPY --from=builder /etc/group /etc/group
-# COPY --from=builder /etc/shadow /etc/shadow
-# COPY --from=builder /etc/pam.d/ /etc/pam.d/
 
 # Make the entrypoint script executable and configure login
 RUN chmod +x /usr/local/bin/pass_request.sh && \

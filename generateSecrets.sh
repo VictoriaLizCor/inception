@@ -80,7 +80,7 @@ DNS=$( ip addr show enp0s3 | grep 'inet ' | awk '{ print $2 }' | cut -d/ -f1)
 filtered_env=$(grep -vE '^(AUTH_KEY|SECURE_AUTH_KEY|LOGGED_IN_KEY|NONCE_KEY|AUTH_SALT|SECURE_AUTH_SALT|LOGGED_IN_SALT|NONCE_SALT)=' srcs/.env)
 # Write the filtered environment variables back to the .env file
 echo "$filtered_env" > srcs/.env
-echo "NGINX_DNS=$DNS" >> srcs/.env
+echo "NGINX_DNS=127.0.0.1" >> srcs/.env
 
 echo -e "\nContent: \n" && tree ./
 echo

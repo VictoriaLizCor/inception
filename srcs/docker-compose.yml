@@ -45,6 +45,7 @@ services:
       DOMAIN_NAME: ${DOMAIN_NAME}
       HOSTNAME: ${HOSTNAME}
       NGINX_PORT: ${NGINX_PORT}
+      WORDPRESS_PORT: ${WORDPRESS_PORT}
     depends_on:
       - wordpress
     networks:
@@ -57,7 +58,7 @@ services:
       timeout: 5s
       retries: 5
     extra_hosts:
-      - "${DOMAIN_NAME}:lilizarr.42.fr"
+      - "${DOMAIN_NAME}:${NGINX_DNS}"
 
   wordpress:
     build:

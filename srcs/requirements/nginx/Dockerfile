@@ -10,6 +10,7 @@ RUN env
 # Create directory for Nginx PID
 RUN mkdir -p /run/nginx 
 
+ARG DOMAIN_NAME WORDPRESS_PORT
 # Copy Nginx configuration file
 COPY ./conf/default.conf /etc/nginx/conf.d/default.conf
 
@@ -28,7 +29,7 @@ COPY ./conf/ssl/privkey.key /etc/nginx/ssl/
 EXPOSE 443
 
 # Add the domain name to /etc/hosts
-ARG DOMAIN_NAME
+
 # Create a health check file
 RUN echo -e "OK" > /var/www/html/healthcheck.html
 
