@@ -19,41 +19,6 @@ if [ -z "$MYSQL_ROOT_PASSWORD" ] || [ -z "$MYSQL_DATABASE" ] || [ -z "$MYSQL_USE
     exit 1
 fi
 
-# useradd -ms /bin/bash mysql && echo "mysql:${MYSQL_PASSWORD}" | chpasswd && adduser mysql sudo
-
-echo "root:${MYSQL_ROOT_PASSWORD}" | chpasswd
-echo "mysql:${MYSQL_PASSWORD}" | chpasswd
-
-
-echo '%sudo ALL=(ALL:ALL) ALL' >> /etc/sudoers
-echo 'root ALL=(ALL:ALL) ALL' >> /etc/sudoers
-echo 'mysql ALL=(ALL:ALL) ALL' >> /etc/sudoers
-
-grep '^root:' /etc/shadow
-
-# # Configure PAM to require a password for the root user
-echo "auth required pam_unix.so" >> /etc/pam.d/common-auth 
-
-# Configure PAM to require a password for login shells
-echo "auth required pam_unix.so" >> /etc/pam.d/login
-
-# Configure PAM to require a password for su
-echo "auth required pam_unix.so" >> /etc/pam.d/su
-echo "account required pam_unix.so" >> /etc/pam.d/su
-echo "session required pam_unix.so" >> /etc/pam.d/su
-
-# Ensure PAM session is properly configured
-echo "session required pam_unix.so" >> /etc/pam.d/common-session
-
-# Check and set shell for root user
-if [ "$(getent passwd root | cut -d: -f7)" != "/bin/bash" ]; then
-    usermod -s /bin/bash root
-fi
-
-# Check and set shell for mysql user
-if [ "$(getent passwd mysql | cut -d: -f7)" != "/bin/bash" ]; then
-    usermod -s /bin/bash mysql
-fi
 
 envsubst < /init.sql.template > /init.sql && cat /init.sql
 

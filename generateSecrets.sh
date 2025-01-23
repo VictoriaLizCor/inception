@@ -74,11 +74,13 @@ LOGGED_IN_SALT="$LOGGED_IN_SALT"
 NONCE_SALT="$NONCE_SALT"
 EOF
 chmod 600 secrets/credentials.txt
+DNS=$( ip addr show enp0s3 | grep 'inet ' | awk '{ print $2 }' | cut -d/ -f1)
+
 # Load environment variables from .env file and filter out the specified variables
 filtered_env=$(grep -vE '^(AUTH_KEY|SECURE_AUTH_KEY|LOGGED_IN_KEY|NONCE_KEY|AUTH_SALT|SECURE_AUTH_SALT|LOGGED_IN_SALT|NONCE_SALT)=' srcs/.env)
-
 # Write the filtered environment variables back to the .env file
 echo "$filtered_env" > srcs/.env
+echo "NGINX_DNS=$DNS" >> srcs/.env
 
 echo -e "\nContent: \n" && tree ./
 echo

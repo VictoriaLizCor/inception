@@ -16,24 +16,14 @@ NAME		:= Inception
 #-------------------- RULES ----------------------------#
 all: run showAll
 
-# Function to check if a container is running
-define check_container_running
-	@docker ps -q -f name=$(1) | grep -q . && echo "Container $(1) is running." || echo "Container $(1) is not running."
-endef
-
-# Function to check if a container exists
-define check_container_exists
-	@docker ps -aq -f name=$(1) | grep -q . && echo "Container $(1) exists." || echo "Container $(1) does not exist."
-endef
-
 # Function to remove a container if it exists
 define remove_container
-	@docker ps -aq -f name=$(1) | grep -q . && docker rm -f $(1) && echo "Removed container $(1)." || echo "Container $(1) does not exist."
+	@docker ps -aq -f name=$(1) | grep -q . && docker rm -f $(1) && echo "Removed container $(1)." 
 endef
 
 # Function to remove an image if it exists
 define remove_image
-	@docker images -q $(1) | grep -q . && docker rmi -f $(1) && echo "Removed image $(1)." || echo "Image $(1) does not exist."
+	@docker images -q $(1) | grep -q . && docker rmi -f $(1) && echo "Removed image $(1)."
 endef
 
 # Build Nginx image
@@ -48,7 +38,7 @@ up-nginx:
 	@$(CMD) up -d nginx
 
 # Check, remove, build, and start Nginx container
-run-nginx: check-nginx remove-nginx build-nginx up-nginx
+run-nginx: remove-nginx build-nginx up-nginx
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started Nginx Container! 🚀\n$(P_NC)"
 
 # Build MariaDB image
@@ -63,27 +53,37 @@ up-mariadb:
 	@$(CMD) up -d mariadb
 
 # Check, remove, build, and start MariaDB container
-run-mariadb: check-mariadb remove-mariadb build-mariadb up-mariadb
+run-mariadb: remove-mariadb build-mariadb up-mariadb
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started MariaDB Container! 🚀\n$(P_NC)"
 
-# Check if Nginx container is running or exists
-check-nginx:
-	$(call check_container_running,nginx)
-	$(call check_container_exists,nginx)
 
 # Remove Nginx container and image if they exist
 remove-nginx:
+	@docker ps -q -f name=nginx | \
+	docker exec -it --user root nginx bash -c "pkill -f nginx" && \
+	docker exec -it --user root nginx bash -c "rm -rf /var/www/html" || \
+	echo "none"
 	$(call remove_container,nginx)
 	$(call remove_image,nginx)
-# Check if MariaDB container is running or exists
-check-mariadb:
-	$(call check_container_running,mariadb)
-	$(call check_container_exists,mariadb)
 
 # Remove MariaDB container and image if they exist
 remove-mariadb:
+	@echo "Stopping MariaDB process in the mariadb container..."
+	@docker exec -it --user root mariadb bash -c "pkill -f mysqld_safe"
+	@echo "Removing /var/lib/mysql directory in the mariadb container..."
+	@docker exec -it --user root mariadb bash -c "rm -rf /var/lib/mysql"
+	@echo "Done."
 	$(call remove_container,mariadb)
 	$(call remove_image,mariadb)
+
+# Remove WordPress container and image if they exist
+remove-wordpress:
+	@echo "Stopping PHP-FPM process in the wordpress container..."
+	@docker exec -it --user root wordpress bash -c "pkill -f php-fpm"
+	@echo "Removing /var/www/html directory in the wordpress container..."
+	@docker exec -it --user root wordpress bash -c "rm -rf /var/www/html"
+	$(call remove_container,wordpress)
+	$(call remove_image,wordpress)
 
 # Build WordPress image
 build-wordpress: $(VOLUMES) secrets #check_host
@@ -97,24 +97,15 @@ up-wordpress:
 	@$(CMD) up -d wordpress
 
 # Check, remove, build, and start WordPress container
-run-wordpress: check-wordpress remove-wordpress build-wordpress up-wordpress
+run-wordpress: remove-wordpress build-wordpress up-wordpress
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started WordPress Container! 🚀\n$(P_NC)"
 
-# Check if WordPress container is running or exists
-check-wordpress:
-	$(call check_container_running,wordpress)
-	$(call check_container_exists,wordpress)
-
-# Remove WordPress container and image if they exist
-remove-wordpress:
-	$(call remove_container,wordpress)
-	$(call remove_image,wordpress)
 
 # Build and start all containers
 run: $(VOLUMES) secrets run-mariadb run-wordpress run-nginx
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started All Containers! 🚀\n$(P_NC)"
 
-$(VOLUMES): check_os
+$(VOLUMES): #check_os
 	@printf "$(LF)\n$(P_BLUE)⚙️  Setting $(P_YELLOW)$(NAME)'s volumes$(FG_TEXT)\n"
 	$(call createDir,$(WP_VOL))
 	$(call createDir,$(DB_VOL))
@@ -164,7 +155,7 @@ prune:
 	@docker volume prune -f > /dev/null
 
 
-clean:
+clean: remove-nginx remove-wordpress removeremove-mariadb 
 	@printf "\n$(LF)🧹 $(P_RED) Clean $(P_GREEN) $(CURRENT)\n"
 	@printf "$(LF)\n  $(P_RED)❗  Removing $(FG_TEXT)"
 	@$(MAKE) --no-print stop down

@@ -7,7 +7,6 @@ wpstat:
 wp-credentials:
 	curl -s https://api.wordpress.org/secret-key/1.1/salt/ | sed -e "s/define('\(.*\)', *'\(.*\)');/\1=\2/"
 
-
 twp:
 	@docker exec -it --user root wordpress bash
 wpDown:
@@ -32,5 +31,9 @@ ngbash:
 	@docker exec -it --user root nginx bash
 ng-ping-maria:
 	-@export $(shell grep '^MYSQL' srcs/.env | xargs) && \
-	docker exec wordpress mysqladmin ping -h"$$MYSQL_HOST" -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD"
+	docker exec nginx mysqladmin ping -h"$$MYSQL_HOST" -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD"
 ngself:
+	docker exec nginx curl -kf https://localhost:443/healthcheck.html
+	@echo
+	docker exec nginx curl -kf https://lilizarr.42.fr/healthcheck.html
+

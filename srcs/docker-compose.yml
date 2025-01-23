@@ -52,10 +52,12 @@ services:
     restart: on-failure
     healthcheck:
       test:
-        ["CMD", "curl", "-fk", "https://localhost:443/healthcheck.html"]
+        ["CMD", "curl", "-fk", "https://${DOMAIN_NAME}/healthcheck.html"]
       interval: 10s
       timeout: 5s
       retries: 5
+    extra_hosts:
+      - "${DOMAIN_NAME}:lilizarr.42.fr"
 
   wordpress:
     build:

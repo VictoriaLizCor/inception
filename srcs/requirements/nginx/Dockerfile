@@ -22,11 +22,13 @@ RUN mkdir -p /var/www/html && \
 
 # Copy SSL certificates
 
-COPY ./conf/ssl/fullchain.crt /var/www/htm/
-COPY ./conf/ssl/privkey.key /var/www/htm/
+COPY ./conf/ssl/fullchain.crt /etc/nginx/ssl/
+COPY ./conf/ssl/privkey.key /etc/nginx/ssl/
 # Expose port 443 for HTTPS
 EXPOSE 443
 
+# Add the domain name to /etc/hosts
+ARG DOMAIN_NAME
 # Create a health check file
 RUN echo -e "OK" > /var/www/html/healthcheck.html
 
