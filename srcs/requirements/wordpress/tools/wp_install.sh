@@ -27,7 +27,7 @@ env
 # fi
 
 # wget https://wordpress.org/latest.tar.gz
-# tar -xzf latest.tar.gz
+# tar -xzf latest.tar.D
 # cp wordpress/wp-config-sample.php wordpress/wp-config.php
 # pwd
 ## Change to the WordPress directory
@@ -37,11 +37,15 @@ cd /var/www/html
 # Wait for MariaDB to be ready
 # echo "Waiting for MariaDB to be ready..."
 echo -e "##################################" 
+cat /credentials
+
 date
 nc -zv mariadb 3306
-mysqladmin -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" status
+# mysqladmin -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" status
 # mysqladmin ping -h localhost -u"mysql" -p"${MYSQL_PASSWORD}"
-mysqladmin ping -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}"
+
+echo -e "${MYSQL_HOST}"
+mysqladmin ping -h"$MYSQL_HOST" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD"
 # until mysqladmin ping -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}"; do #--silent; do
 #     echo "Waiting for database connection..."
 #     sleep 5
@@ -59,7 +63,7 @@ else
 	wp config set --allow-root DB_NAME "$MYSQL_DATABASE"
 	wp config set --allow-root DB_USER "$MYSQL_USER"
 	wp config set --allow-root DB_PASSWORD "$MYSQL_PASSWORD"
-	wp config set --allow-root DB_HOST "$DB_HOST"
+	wp config set --allow-root DB_HOST "$MYSQL_HOST"
 	wp config set --allow-root AUTH_KEY "${AUTH_KEY}"
 	wp config set --allow-root SECURE_AUTH_KEY "${SECURE_AUTH_KEY}"
 	wp config set --allow-root LOGGED_IN_KEY "${LOGGED_IN_KEY}"

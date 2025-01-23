@@ -18,4 +18,5 @@ catdb:
 rhealth:
 	@docker exec -it mariadb mysqladmin ping -h localhost -u root -p
 mhealth:
-	@docker exec wordpress mysqladmin ping -h mariadb -u lilizarr -p"lilizarr123" 
+	-@export $(shell grep '^MYSQL' srcs/.env | xargs) && \
+	docker exec mariadb mysqladmin ping -h"$$MYSQL_HOST" -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD"

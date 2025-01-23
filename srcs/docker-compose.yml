@@ -47,7 +47,8 @@ services:
       NGINX_PORT: ${NGINX_PORT}
       WORDPRESS_PORT: ${WORDPRESS_PORT}
     depends_on:
-      - wordpress
+      wordpress:
+        condition: service_healthy
     networks:
       - ${NETWORK_NAME}
     restart: on-failure
@@ -75,7 +76,7 @@ services:
       - ${NETWORK_NAME}
     #   - private
     healthcheck:
-      test: ["CMD", "nc", "-zv", "mariadb", "3306"]
+      test: ["CMD", "nc", "-zv", "${NGINX_DNS}", "3306"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -122,7 +123,7 @@ services:
       - SETUID
       - DAC_OVERRIDE
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "${MYSQL_HOST}", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
       # test: ["CMD", "nc", "-zv", "mariadb", "3306"]
       interval: 10s
       timeout: 5s

@@ -1,6 +1,7 @@
 # Use Debian bullseye as the base image
 FROM debian:bullseye
 
+ARG DOMAIN_NAME WORDPRESS_PORT
 # Update package list and install Nginx and OpenSSL
 RUN apt-get update && apt-get install -y \
     nginx curl openssl certbot \
@@ -9,8 +10,7 @@ RUN apt-get update && apt-get install -y \
 RUN env
 # Create directory for Nginx PID
 RUN mkdir -p /run/nginx 
-
-ARG DOMAIN_NAME WORDPRESS_PORT
+RUN echo "${WORDPRESS_PORT}"
 # Copy Nginx configuration file
 COPY ./conf/default.conf /etc/nginx/conf.d/default.conf
 
