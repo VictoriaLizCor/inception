@@ -18,12 +18,12 @@ all: run showAll
 
 # Function to remove a container if it exists
 define remove_container
-	@docker ps -aq -f name=$(1) | grep -q . && docker rm -f $(1) && echo "Removed container $(1)." 
+	@docker ps -aq -f name=$(1) | grep -q . && docker rm -f $(1) && echo "Removed container $(1)." || exit 0
 endef
 
 # Function to remove an image if it exists
 define remove_image
-	@docker images -q $(1) | grep -q . && docker rmi -f $(1) && echo "Removed image $(1)."
+	@docker images -q $(1) | grep -q . && docker rmi -f $(1) && echo "Removed image $(1)." || exit 0
 endef
 
 # Build Nginx image
@@ -59,29 +59,28 @@ run-mariadb: remove-mariadb build-mariadb up-mariadb
 
 # Remove Nginx container and image if they exist
 remove-nginx:
-	@docker ps -q -f name=nginx | \
-	docker exec -it --user root nginx bash -c "pkill -f nginx" && \
-	docker exec -it --user root nginx bash -c "rm -rf /var/www/html" || \
-	echo "none"
+	@if [ -n "$$(docker ps -q -f name=nginx)" ];  then \
+		docker exec -it --user root nginx bash -c "pkill -f nginx"; \
+		docker exec -it --user root nginx bash -c "rm -rf /var/www/html" ; \
+	fi
 	$(call remove_container,nginx)
 	$(call remove_image,nginx)
 
 # Remove MariaDB container and image if they exist
 remove-mariadb:
-	@echo "Stopping MariaDB process in the mariadb container..."
-	@docker exec -it --user root mariadb bash -c "pkill -f mysqld_safe"
-	@echo "Removing /var/lib/mysql directory in the mariadb container..."
-	@docker exec -it --user root mariadb bash -c "rm -rf /var/lib/mysql"
-	@echo "Done."
+	@if [ -n "$$(docker ps -q -f name=mariadb)" ]; then \
+		docker stop mariadb ; \
+		docker run --rm -v /home/lilizarr/data/mariadb:/var/lib/mysql mariadb bash -c "rm -rf /var/lib/mysql/*"; \
+	fi
 	$(call remove_container,mariadb)
 	$(call remove_image,mariadb)
 
 # Remove WordPress container and image if they exist
 remove-wordpress:
-	@echo "Stopping PHP-FPM process in the wordpress container..."
-	@docker exec -it --user root wordpress bash -c "pkill -f php-fpm"
-	@echo "Removing /var/www/html directory in the wordpress container..."
-	@docker exec -it --user root wordpress bash -c "rm -rf /var/www/html"
+	@if [ -n "$$(docker ps -q -f name=wordpress)" ];  then \
+		docker stop wordpress; \
+		docker run --rm -v /home/lilizarr/data/wordpress:/var/www/html wordpress bash -c "rm -rf /var/www/html/*"; \
+	fi
 	$(call remove_container,wordpress)
 	$(call remove_image,wordpress)
 
@@ -138,7 +137,7 @@ remove_containers: rm-secrets
 
 remove_volumes:
 	@printf "$(LF)$(P_RED)  ❗  Removing $(P_YELLOW)Volumes $(FG_TEXT)"
-	@sudo rm -rf $(VOLUMES)
+	@rm -rf $(VOLUMES)
 	@if [ -n "$$(docker volume ls -q)" ]; then \
 		docker volume rm $$(docker volume ls -q) > /dev/null; \
 	fi
@@ -155,7 +154,7 @@ prune:
 	@docker volume prune -f > /dev/null
 
 
-clean: remove-nginx remove-wordpress removeremove-mariadb 
+clean: remove-nginx remove-wordpress remove-mariadb 
 	@printf "\n$(LF)🧹 $(P_RED) Clean $(P_GREEN) $(CURRENT)\n"
 	@printf "$(LF)\n  $(P_RED)❗  Removing $(FG_TEXT)"
 	@$(MAKE) --no-print stop down
