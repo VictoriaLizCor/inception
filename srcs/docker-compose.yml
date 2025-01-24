@@ -59,8 +59,8 @@ services:
       timeout: 5s
       retries: 5
     extra_hosts:
-      - "${DOMAIN_NAME}:127.0.0.1"
-    #   - "${DOMAIN_NAME}:${NGINX_DNS}"
+    #   - "${DOMAIN_NAME}:127.0.0.1"
+      - "${DOMAIN_NAME}:${NGINX_DNS}"
 
   wordpress:
     build:
@@ -125,7 +125,6 @@ services:
       - DAC_OVERRIDE
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "${MYSQL_HOST}", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
-      # test: ["CMD", "nc", "-zv", "mariadb", "3306"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -34,7 +34,7 @@ gPush:
 			exit 1; \
 		fi \
 	fi
-git: fclean gAdd gCommit gPush
+git: gAdd gCommit gPush
 
 # #-------------------- Check OS dependencies ----------------------#
 check_os:
