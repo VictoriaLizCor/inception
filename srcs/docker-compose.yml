@@ -1,0 +1,138 @@
+secrets:
+  db_root_pass:
+    file: ../secrets/db_root_password.txt
+  db_user_pass:
+    file: ../secrets/db_password.txt
+  credentials:
+    file: ../secrets/credentials.txt
+  # ftp_user_pass:
+  #   file: ../secrets/ftp_user_pass.txt
+
+volumes:
+  db-vol:
+    name: dataBase
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MARIADB_VOLUME}
+
+  wp-vol:
+    name: userData
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WORDPRESS_VOLUME}
+
+networks:
+  Inception42:
+    driver: bridge
+    name: ${NETWORK_NAME}
+
+services:
+  nginx:
+    build:
+      context: requirements/nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    image: nginx
+    volumes:
+      -  wp-vol:/var/www/html
+    ports:
+      - $NGINX_PORT:$NGINX_PORT
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      HOSTNAME: ${HOSTNAME}
+      NGINX_PORT: ${NGINX_PORT}
+      WORDPRESS_PORT: ${WORDPRESS_PORT}
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    networks:
+      - ${NETWORK_NAME}
+    restart: on-failure
+    healthcheck:
+      test:
+        ["CMD", "curl", "-fk", "https://${DOMAIN_NAME}/healthcheck.html"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    extra_hosts:
+    #   - "${DOMAIN_NAME}:127.0.0.1"
+      - "${DOMAIN_NAME}:${NGINX_DNS}"
+
+  wordpress:
+    build:
+        context: ./requirements/wordpress
+        dockerfile: Dockerfile
+        secrets:
+          - credentials
+    image: wordpress
+    hostname: wordpress
+    container_name: wordpress
+    volumes:
+      - wp-vol:/var/www/html
+    networks:
+      - ${NETWORK_NAME}
+    #   - private
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "${NGINX_DNS}", "${WORDPRESS_PORT}"]
+      interval: 10s
+      timeout: 30s
+      retries: 10
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      TABLE_PREFIX: wp_
+
+  mariadb:
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+      args:
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_USER: ${MYSQL_USER}
+      secrets:
+        - db_root_pass
+        - db_user_pass
+    image: mariadb
+    container_name: mariadb
+    hostname: mariadb
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_TCP_PORT: ${DB_PORT}
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - db-vol:/var/lib/mysql
+    networks:
+      - ${NETWORK_NAME}
+    #   - private
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    privileged: true
+    security_opt:
+      - no-new-privileges 
+    cap_add:
+      - SYS_ADMIN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "${MYSQL_HOST}", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+
+  # private:
+    # ipam:
+    #   config:
+    #     - subnet: "10.0.0.0/19"
+    #       gateway: "10.0.0.1"
