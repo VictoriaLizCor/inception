@@ -90,7 +90,7 @@ remove-wordpress:
 	$(call remove_image,wordpress)
 
 # Build WordPress image
-build-wordpress: $(VOLUMES) secrets #check_host
+build-wordpress: $(VOLUMES) secrets clean-wordpress-cache #check_host
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building WordPress image \n\n$(P_NC)";
 	@bash -c 'set -o pipefail; $(CMD) build wordpress 2>&1 | tee build-wordpress.log || { echo "Error: Docker compose build failed. Check build-wordpress.log for details."; exit 1; }'
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Built WordPress Image! 🐳\n$(P_NC)"

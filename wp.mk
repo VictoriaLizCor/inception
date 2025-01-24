@@ -21,7 +21,11 @@ check-nc:
 wp-ping:
 	-@export $(shell grep '^MYSQL' srcs/.env | xargs) && \
 	docker exec wordpress mysqladmin ping -h"$$MYSQL_HOST" -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD"; \
-	docker exec wordpress nc -zv localhost 9000; \
+	docker exec wordpress nc -zv localhost 9000
+
+clean-wordpress-cache:
+	@echo "Cleaning Docker cache for Nginx..."
+	@docker image rm wordpress:latest || true
 
 ### nginx
 nglog:

@@ -127,13 +127,21 @@ if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
 	if wp theme is-installed twentytwentyfour --allow-root; then
 		wp theme delete twentytwentyfour --allow-root
 	fi
-	if wp theme is-installed twentytwentyfive --allow-root; then
-		wp theme delete twentytwentyfour --allow-root
-	fi
-	wp theme install canard --activate --allow-root
+	# if wp theme is-installed twentytwentyfive --allow-root; then
+	# 	wp theme delete twentytwentyfive --allow-root
+	# fi
+	# wp theme install twentytwentyone --activate --allow-root
+	wp post delete 1 --force --allow-root
+	wp plugin install envira-gallery-lite --activate
+	wp plugin install embed-google-photos --activate
+
+	# wp theme install Hever --activate --allow-root
 	# Install necessary plugins
 	wp plugin install wp-super-cache --activate --allow-root
-
+	wp post create --post_title='This is my Home: Puerto Escondido' --post_content='Puerto Escondido! [embed-google-photos album="https://photos.app.goo.gl/opyguN6Xf7tpvj6B9"]' --post_status=publish
+	https://photos.app.goo.gl/iicwieyh9a5Qk9FA8
+	https://photos.app.goo.gl/TthEw7oAqHW1n3UP6
+	https://photos.app.goo.gl/U2SDyJJfJkrRWSaj8
 fi
 echo "WordPress setup completed successfully!"
 
