@@ -39,3 +39,10 @@ ngself:
 	@echo
 	docker exec nginx curl -kf https://lilizarr.42.fr/healthcheck.html
 
+clean-nginx-cache:
+	@echo "Cleaning Docker cache for Nginx..."
+	@docker image rm nginx:latest || true
+
+web:
+	@echo "Opening Firefox in incognito mode..."
+	@firefox --private-window https://lilizarr.42.fr &

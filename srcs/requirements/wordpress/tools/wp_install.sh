@@ -131,8 +131,13 @@ if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
 	# Install necessary plugins
 	wp plugin install wp-super-cache --activate --allow-root
 
-	
 fi
 echo "WordPress setup completed successfully!"
+
+# Set correct permissions for directories and files
+chown www-data:www-data /var/www/html/wp-content/wp-cache-config.php
+chmod 664 /var/www/html/wp-content/wp-cache-config.php
+find /var/www/html -type d -exec chmod 755 {} \; && \
+find /var/www/html -type f -exec chmod 644 {} \;
 rm /credentials
 php-fpm7.4 -F

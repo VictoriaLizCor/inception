@@ -19,22 +19,21 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
     chmod +x wp-cli.phar && \
     mv wp-cli.phar /usr/local/bin/wp
 
-RUN mkdir -p /run/php var/www/html && \
-	chmod -R 777 /var/www/html && \
-	chown -R root:root /var/www/ && \
-    chown -R www-data:www-data /var/www/html
+# Create necessary directories and set permissions
+RUN mkdir -p /run/php /var/www/html && \
+    chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 /var/www/html
 
-
-# Copy PHP-FPM configuration
+# Copy configuration files
 COPY ./conf/www.cnf /etc/php/7.4/fpm/pool.d/www.conf
-COPY ./conf/wp-config.php /wp-config.php.template
+# COPY ./conf/wp-config.php /wp-config.php.template
 COPY ./tools/wp_install.sh /usr/bin/wp_install.sh
+COPY ./conf/site-health.php /var/www/html/
+# Make the wp_install.sh script executable
+RUN chmod +x /usr/bin/wp_install.sh
 
-RUN chmod +x /usr/bin/wp_install.sh 
+# Ensure wp-cache-config.php is writable by the webserver
 
-
-RUN find /var/www/html -type d -exec chmod 755 {} \;
-RUN find /var/www/html -type f -exec chmod 644 {} \;
 COPY --from=builder /credentials /credentials
 
 # Expose the PHP-FPM port

@@ -43,7 +43,7 @@ up-nginx:
 	@$(CMD) up -d nginx
 
 # Check, remove, build, and start Nginx container
-run-nginx: remove-nginx build-nginx up-nginx
+run-nginx: remove-nginx clean-nginx-cache build-nginx up-nginx
 	@printf "\n$(LF)🚀 $(P_GREEN)Successfully Built and Started Nginx Container! 🚀\n$(P_NC)"
 
 # Build MariaDB image
@@ -182,7 +182,7 @@ rm-secrets: clean_host
 		shred -u $(SRCS)/.env; \
 	fi
 
-secrets: #check_host
+secrets: check_host
 	@$(call createDir,./secrets)
 	@chmod +x generateSecrets.sh
 	@echo $(WHITE)
@@ -196,4 +196,4 @@ showData:
 re: fclean all
 
 
-.PHONY: all set build up down clean fclean status logs restart re showAll check_os rm-secrets remove_images remove_containers remove_volumes remove_networks prune showData secrets #check_host
+.PHONY: all set build up down clean fclean status logs restart re showAll check_os rm-secrets remove_images remove_containers remove_volumes remove_networks prune showData secrets check_host
