@@ -29,9 +29,9 @@ clean-wordpress-cache:
 
 ### nginx
 nglog:
-	$(CMD) logs nginx
-	docker exec -it --user root nginx bash -c "cat /var/log/nginx/error.log"
-	docker exec -it --user root nginx bash -c "cat /var/log/nginx/access.log"
+	-$(CMD) logs nginx
+	-docker exec -it --user root nginx bash -c "cat /var/log/nginx/error.log"
+	-docker exec -it --user root nginx bash -c "cat /var/log/nginx/access.log"
 ngbash:
 	@docker exec -it --user root nginx bash
 ng-ping-maria:
@@ -49,3 +49,13 @@ clean-nginx-cache:
 web:
 	@echo "Opening Firefox in incognito mode..."
 	@firefox --private-window https://lilizarr.42.fr &
+
+wp-ng:
+	@printf "$(LF)\n$(D_PURPLE)[+] Stopping Nginx and MariaDB containers $(P_NC)\n"
+	@$(CMD) stop nginx wordpress
+	@printf "$(LF)\n$(D_PURPLE)[+] Removing Nginx and MariaDB containers $(P_NC)\n"
+	@$(CMD) rm -f  wordpress nginx
+	@printf "$(LF)\n$(D_PURPLE)[+] Removing Nginx and MariaDB images $(P_NC)\n"
+	-@docker rmi wordpress nginx
+	@$(CMD) build wordpress nginx --no-cache
+	@$(CMD) up -d wordpress nginx

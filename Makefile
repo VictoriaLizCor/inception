@@ -159,7 +159,7 @@ prune:
 	@docker volume prune -f > /dev/null
 
 
-clean: remove-nginx remove-wordpress remove-mariadb 
+clean: #remove-nginx remove-wordpress remove-mariadb 
 	@printf "\n$(LF)🧹 $(P_RED) Clean $(P_GREEN) $(CURRENT)\n"
 	@printf "$(LF)\n  $(P_RED)❗  Removing $(FG_TEXT)"
 	@$(MAKE) --no-print stop down
