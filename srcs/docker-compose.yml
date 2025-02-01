@@ -5,8 +5,7 @@ secrets:
     file: ../secrets/db_password.txt
   credentials:
     file: ../secrets/credentials.txt
-  # ftp_user_pass:
-  #   file: ../secrets/ftp_user_pass.txt
+
 
 volumes:
   db-vol:
@@ -52,6 +51,8 @@ services:
     networks:
       - ${NETWORK_NAME}
     restart: on-failure
+    expose:
+      - ${NGINX_PORT}
     healthcheck:
       test:
         ["CMD", "curl", "-fk", "https://${DOMAIN_NAME}/healthcheck.html"]
@@ -63,11 +64,11 @@ services:
     build:
         context: ./requirements/wordpress
         dockerfile: Dockerfile
-        secrets:
-          - credentials
     image: wordpress
     hostname: wordpress
     container_name: wordpress
+    secrets:
+      - credentials
     volumes:
       - wp-vol:/var/www/html
     networks:
@@ -97,6 +98,8 @@ services:
         - db_user_pass
     image: mariadb
     container_name: mariadb
+    secrets:
+        - db_user_pass
     hostname: mariadb
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -121,7 +124,7 @@ services:
       - SETUID
       - DAC_OVERRIDE
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "${MYSQL_HOST}", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "mariadb", "-u${MYSQL_USER}", "-p$(cat /run/secrets/db_user_pass)"]
       interval: 10s
       timeout: 5s
       retries: 5

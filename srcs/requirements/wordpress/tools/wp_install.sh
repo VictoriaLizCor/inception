@@ -1,15 +1,15 @@
 #!/bin/bash
 set -x
-if [ -f /credentials ]; then
+if [ -f /run/secrets/credentials ]; then
     while IFS='=' read -r key value; do
         if [[ ! $key =~ ^# && -n $key ]]; then
             export "$key=$(echo "$value" | sed 's/^"\(.*\)"$/\1/')"
         else
             export "$key=$(echo "$value" | sed 's/^"\(.*\)"$/\1/')"
         fi
-    done < /credentials
+    done < /run/secrets/credentials
 else
-    echo "Error: //credentials file not found."
+    echo "Error: /run/secrets/credentials file not found."
     exit 1
 fi
 
@@ -37,23 +37,17 @@ cd /var/www/html
 # Wait for MariaDB to be ready
 # echo "Waiting for MariaDB to be ready..."
 echo -e "##################################" 
-cat /credentials
+cat /run/secrets/credentials
 
-date
-nc -zv mariadb 3306
 # mysqladmin -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" status
 # mysqladmin ping -h localhost -u"mysql" -p"${MYSQL_PASSWORD}"
 
 echo -e "${MYSQL_HOST}"
 mysqladmin ping -h"$MYSQL_HOST" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD"
-# until mysqladmin ping -h"${MYSQL_HOST}" -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}"; do #--silent; do
-#     echo "Waiting for database connection..."
-#     sleep 5
-# done
+
 # Install WordPress
 echo "Downloading WordPress..."
-# mv /wordpress/* /var/www/html
-# mv wp-config.php wp-config.php.tmp
+
 if wp core is-installed --allow-root; then
     echo "WordPress is already installed."
 	wp core update --allow-root
@@ -74,31 +68,7 @@ else
 	wp config set --allow-root LOGGED_IN_SALT "${LOGGED_IN_SALT}"
 	wp config set --allow-root NONCE_SALT "${NONCE_SALT}"
 fi
-# echo -e "################################## first :$WORDPRESS_ADMIN_USER ,  $WORDPRESS_ADMIN_PASSWORD ################################# \n"
-# cat wp-config.php
-# wp core install --url="https://$DOMAIN_NAME" --title="$WP_TITLE" --admin_user="$WORDPRESS_ADMIN_USER" --admin_password="$WORDPRESS_ADMIN_PASSWORD" --admin_email="$WORDPRESS_ADMIN_EMAIL" --allow-root
-# echo -e "################################## second : $WORDPRESS_USER , $WORDPRESS_USER_PASSWORD  ################################# \n"
-# wp user create "$WORDPRESS_USER" "$WORDPRESS_USER_EMAIL" --user_pass="$WORDPRESS_USER_PASSWORD" --role="subscriber" --allow-root
-
-
-# if wp config create --allow-root --dbhost="$DB_HOST" \
-# 	--dbname="$MYSQL_DATABASE" --dbuser="$MYSQL_USER" \
-# 	--dbpass=${MYSQL_PASSWORD} ; then
-# 	echo "WordPress 'wp-config.php' created successfully"
-# else
-# 	"Failed to create WordPress 'wp-config.php'"
-# fi
-# if wp config create --allow-root \
-# 	--dbname=${MYSQL_DATABASE} \
-# 	--dbuser=${MYSQL_USER} \
-# 	--dbpass=${MYSQL_PASSWORD} \
-# 	--dbhost=${DB_HOST}:3306 \
-#     --dbprefix=${TABLE_PREFIX} \
-# 	--dbcharset="utf8mb4"  ; then
-# 	echo "WordPress 'wp-config.php' created successfully"
-# else
-# 	"Failed to create WordPress 'wp-config.php'"
-# fi	
+	
 echo -e "##################################"
 echo "Installing WordPress..."
 echo -e "##################################"
@@ -133,22 +103,12 @@ if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
 	if wp theme is-installed twentytwentyfour --allow-root; then
 		wp theme delete twentytwentyfour --allow-root
 	fi
-	if wp theme is-installed twentytwentyfive --allow-root; then
-		wp theme delete twentytwentyfive --allow-root
-	fi
+	# if wp theme is-installed twentytwentyfive --allow-root; then
+	# 	wp theme delete twentytwentyfive --allow-root
+	# fi
 	
 	wp post delete 1 --force --allow-root
-	wp theme install astra --activate --allow-root
-	# Install necessary plugins
-	wp plugin install wp-super-cache --activate --allow-root
-	THEME=$(wp theme list --status=active --allow-root)
-	# Enqueue Bootstrap in the theme
-	echo "function enqueue_bootstrap() {
-		wp_enqueue_style('bootstrap-css', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css');
-		wp_enqueue_script('bootstrap-js', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js', array('jquery'), null, true);
-	}
-	add_action('wp_enqueue_scripts', 'enqueue_bootstrap');" >> /var/www/html/wp-content/themes/$THEME/functions.php
-
+	
 	# Create a new post with a Bootstrap carousel
 	POST_CONTENT='
 	<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
@@ -182,7 +142,44 @@ if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
 	</a>
 	</div>
 	'
-	wp post create --post_title="This is my Hometown" --post_status=publish --post_content="$POST_CONTENT" --allow-root --porcelain
+	#wp theme search artly --allow-root
+	wp theme install yuki-reverie-blog --activate --allow-root
+	# wp theme install artly --activate --allow-root
+	# wp theme install hey  --activate --allow-root
+	 
+	# Install necessary plugins
+	wp plugin install wp-super-cache --activate --allow-root
+	wp plugin install simple-local-avatars --activate --allow-root
+	THEME=$(wp theme list --status=active --field=name --allow-root)
+	# Enqueue Bootstrap in the theme
+	echo "function enqueue_bootstrap() {
+		wp_enqueue_style('bootstrap-css', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css');
+		wp_enqueue_script('bootstrap-js', 'https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js', array('jquery'), null, true);
+	}
+	add_action('wp_enqueue_scripts', 'enqueue_bootstrap');" >> /var/www/html/wp-content/themes/$THEME/functions.php
+
+	# Set user profile picture
+	USER_ID=$(wp user get $WORDPRESS_USER --field=ID --allow-root)
+	PROFILE_PICTURE_URL="https://lh3.googleusercontent.com/pw/AP1GczPpPxZZU408-rvu_8ZWeyoeDqMbl4gytgAfsJ5lF3D9Qkmkk5kUDFtfubHQuJl65co95Ii92ur-9UuVWUVDZmTH576-FGB5FARVVEaRDS5f3vXrsYYwm7x1Vz_ifmncflkf0qr07NMsZuQOnoB-iCRH=w512-h512-s-no?authuser=0"
+
+	# Download the profile picture
+	curl -o /tmp/tmp.jpg "$PROFILE_PICTURE_URL"
+	convert /tmp/tmp.jpg -resize 150x150 /tmp/profile-picture.jpg
+	# Upload the profile picture to WordPress
+	ATTACHMENT_ID=$(wp media import /tmp/profile-picture.jpg --user=$USER_ID --porcelain --allow-root)
+	# Set the profile picture for the user
+	wp user meta update $USER_ID simple_local_avatar $ATTACHMENT_ID --allow-root
+	# Retrieve the avatar URL
+	AVATAR_URL=$(wp user meta get $USER_ID simple_local_avatar --allow-root)
+	# Add avatar to the beginning of the post content
+	# POST_CONTENT='<img src="'$AVATAR_URL'" alt="User Avatar" />'"\n$POST_CONTENT"
+	# Clean up
+	rm -rf /tmp/*.jpg
+	echo "Profile picture set for user ID $USER_ID"
+
+	wp term create category Blog --allow-root
+	BLOG=$(wp term list category --name=Blog --field=term_id --allow-root)
+	POST_ID=$(wp post create --post_title="This is my Hometown" --post_status=publish --post_content="$POST_CONTENT" --post_author="$USER_ID" --post_category="$BLOG" --allow-root --porcelain) --post_thumbnail="$ATTACHMENT_ID"
 
 
 	# Find the ID of the "Sample Page"
@@ -194,9 +191,9 @@ fi
 echo "WordPress setup completed successfully!"
 
 # Set correct permissions for directories and files
-chown www-data:www-data /var/www/html/wp-content/wp-cache-config.php
-chmod 664 /var/www/html/wp-content/wp-cache-config.php
-rm /credentials
+# chown www-data:www-data /var/www/html/wp-content/wp-cache-config.php
+# chmod 664 /var/www/html/wp-content/wp-cache-config.php
+# rm /credentials
 php-fpm7.4 -F
 
 

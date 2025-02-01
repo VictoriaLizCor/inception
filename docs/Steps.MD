@@ -376,6 +376,10 @@ configs:
 
 3. **Create NGINX Configuration File:**
 
+- **FPM** stands for **FastCGI Process Manager**. It is an alternative PHP FastCGI implementation with some additional features useful for heavy-loaded sites. It provides features like process management, adaptive process spawning, and more.
+
+- **FastCGI** is a protocol for interfacing interactive programs with a web server. It is an improvement over the older CGI (Common Gateway Interface) protocol, providing better performance by keeping the process running to handle multiple requests, rather than starting a new process for each request. FastCGI allows a web server to handle dynamic content by communicating with a separate process that generates the content, such as a PHP-FPM process.
+
 Create an `nginx.conf` file to configure NGINX to use TLSv1.2 or TLSv1.3.
 
 ```nginx

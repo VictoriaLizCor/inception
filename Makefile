@@ -120,7 +120,7 @@ down:
 
 up:
 	@printf "$(LF)\n$(D_PURPLE)[+] Phase of creating containers $(P_NC)\n"
-	@$(CMD) up -d
+	@$(CMD) up -d 
 
 stop:
 	@printf "$(LF)$(P_RED)  ❗  Stopping $(P_YELLOW)Containers $(P_NC)\n"
@@ -196,4 +196,4 @@ showData:
 re: fclean all
 
 
-.PHONY: all set build up down clean fclean status logs restart re showAll check_os rm-secrets remove_images remove_containers remove_volumes remove_networks prune showData secrets check_host
+.PHONY: all buildAll set build up down clean fclean status logs restart re showAll check_os rm-secrets remove_images remove_containers remove_volumes remove_networks prune showData secrets check_host

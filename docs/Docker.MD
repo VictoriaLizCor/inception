@@ -1,29 +1,9 @@
 ---
-![1_Wu-YcRkS4CQUFQcY_rcdtw](https://github.com/amaitou/Inception/assets/49293816/4826f89d-4754-47e8-b027-0ad4d47c34a0)
+
 
 ---
 
 # Table of contents:
-
-- [Inception](https://github.com/amaitou/Inception?tab=readme-ov-file#inception)
-- [What is Docker?](https://github.com/amaitou/Inception?tab=readme-ov-file#what-is-docker)
-- [Commands](https://github.com/amaitou/Inception?tab=readme-ov-file#commands)
-	- [image](https://github.com/amaitou/Inception?tab=readme-ov-file#image)
-	- [container](https://github.com/amaitou/Inception?tab=readme-ov-file#container)
-- [Data Persistence](https://github.com/amaitou/Inception?tab=readme-ov-file#data-persistence)
-	- [Volumes](https://github.com/amaitou/Inception?tab=readme-ov-file#volumes)
-	- [Mount](https://github.com/amaitou/Inception?tab=readme-ov-file#mount)
-	- [The Difference between Volume and Mount](https://github.com/amaitou/Inception?tab=readme-ov-file#the-difference-between-volume-and-mount)
-		- [Data Persistence](https://github.com/amaitou/Inception?tab=readme-ov-file#data-persistence-1)
-		- [Real-time Interaction](https://github.com/amaitou/Inception?tab=readme-ov-file#real-time-interaction)
-- [Docker Network](https://github.com/amaitou/Inception?tab=readme-ov-file#docker-network)
-	- [Type of Docker Networks](https://github.com/amaitou/Inception?tab=readme-ov-file#type-of-docker-networks)
-		- [Bridge Network](https://github.com/amaitou/Inception?tab=readme-ov-file#bridge-network)
-		- [Host Network](https://github.com/amaitou/Inception?tab=readme-ov-file#host-network)
-	- [IP Address Assignment](https://github.com/amaitou/Inception?tab=readme-ov-file#ip-address-assignment-)
-- [Docker-Compose](https://github.com/amaitou/Inception?tab=readme-ov-file#docker-compose)
-- [Docker-Compose Commands](https://github.com/amaitou/Inception?tab=readme-ov-file#docker-compose-commands)
-- [PID 1 (Process ID 1)](https://github.com/amaitou/Inception?tab=readme-ov-file#pid-1-process-id-1)
 
 ---
 
