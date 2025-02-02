@@ -52,7 +52,7 @@ RUN chmod +x /usr/local/bin/pass_request.sh && \
 echo 'source /usr/local/bin/pass_request.sh' >> /etc/bash.bashrc && \
 chown -R mysql:mysql /var/lib/mysql /run/mysqld /var/log/mysql
 
-
+# Expose port
 EXPOSE 3306
 
 USER mysql
