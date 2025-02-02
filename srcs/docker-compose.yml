@@ -5,6 +5,10 @@ secrets:
     file: ../secrets/db_password.txt
   credentials:
     file: ../secrets/credentials.txt
+  ssl_key:
+    file: ../secrets/ssl/privkey.key
+  ssl_cert:
+    file: ../secrets/ssl/fullchain.crt
 
 
 volumes:
@@ -36,6 +40,9 @@ services:
       dockerfile: Dockerfile
     container_name: nginx
     image: nginx
+    secrets:
+      - ssl_key
+      - ssl_cert
     volumes:
       -  wp-vol:/var/www/html
     ports:

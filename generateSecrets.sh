@@ -20,7 +20,7 @@ if [ -f .tmp.enc ]; then
 	sleep 2
 	rm .tmp.tar.gz
 	mv .tmp_extract/srcs/.env.tmp srcs/.env
-	cp -r .tmp_extract/srcs/requirements/nginx/conf/ssl srcs/requirements/nginx/conf/
+	cp -r .tmp_extract/srcs/requirements/nginx/conf/ssl secrets
 	rm -r .tmp_extract
 	# openssl enc -aes-256-cbc -d -salt -pbkdf2 -in srcs/.env.enc -out srcs/.env -k "$DECRYPTION_KEY"
 else
