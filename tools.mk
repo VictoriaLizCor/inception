@@ -120,6 +120,7 @@ install_docker:
 		sudo apt-get install -y docker-compose-plugin; \
 		printf "$(LF)$(P_GREEN)✅ Successfully installed Docker Compose! ✅$(P_NC)\n"; \
 	fi
+
 # copy files from local machine to VM with ssh
 cpy-host:
 	@scp Debian:inception/* ./

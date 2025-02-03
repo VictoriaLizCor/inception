@@ -1,5 +1,6 @@
 #------ SRC FILES & DIRECTORIES ------#
 SRCS	:= srcs
+D		:= 0
 CMD		:= cd $(SRCS) && docker compose
 PROJECT_ROOT:= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../)
 GIT_REPO	:=$(abspath $(dir $(lastword $(MAKEFILE_LIST)))/../..)
@@ -18,7 +19,11 @@ all: buildAll up showAll
 
 buildAll: $(VOLUMES) secrets
 	@printf "\n$(LF)⚙️  $(P_BLUE) Building Images \n\n$(P_NC)";
+ifneq ($(D), 0)
 	@bash -c 'set -o pipefail; $(CMD) build 2>&1 | tee build.log || { echo "Error: Docker compose build failed. Check build.log for details."; exit 1; }'
+else
+	@bash -c 'set -o pipefail; $(CMD) build || { echo "Error: Docker compose build failed. Check build.log for details."; exit 1; }'
+endif
 	@printf "\n$(LF)🐳 $(P_BLUE)Successfully Builted Images! 🐳\n$(P_NC)"
 
 # Function to remove a container if it exists
@@ -116,7 +121,9 @@ $(VOLUMES): #check_os
 
 down:
 	@printf "$(LF)\n$(P_RED)[-] Phase of stopping and deleting containers $(P_NC)\n"
-	@$(CMD) down -v --rmi local
+	@if [ -n "$$(docker ps -q)" ]; then \
+		$(CMD) down -v --rmi local ;\
+	fi
 
 up:
 	@printf "$(LF)\n$(D_PURPLE)[+] Phase of creating containers $(P_NC)\n"
@@ -146,7 +153,6 @@ remove_volumes:
 	@if [ -n "$$(docker volume ls -q)" ]; then \
 		docker volume rm $$(docker volume ls -q) > /dev/null; \
 	fi
-
 
 remove_networks:
 	@printf "$(LF)$(P_RED)  ❗  Removing $(P_YELLOW)networks $(FG_TEXT)"

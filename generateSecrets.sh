@@ -28,9 +28,7 @@ else
 	exit 1
 fi
 
-# sleep 1 
 # Load environment variables from .env file
-# export $(grep -v '^#' srcs/.env | xargs)
 while IFS='=' read -r key value; do
 	if [[ ! $key =~ ^# && -n $key ]]; then
 		export "$key=$(echo "$value" | sed 's/^"\(.*\)"$/\1/')"
@@ -41,10 +39,8 @@ done < srcs/.env
 # Create secret files
 echo "$MYSQL_ROOT_PASSWORD" > secrets/db_root_password.txt
 echo "$MYSQL_PASSWORD" > secrets/db_password.txt
-# echo "$WORDPRESS_ADMIN_PASSWORD" > secrets/wp_admin_password.txt
-# echo "$WORDPRESS_USER_PASSWORD" > secrets/wp_user_password.txt
-
 chmod 600 secrets/db_root_password.txt secrets/db_password.txt 
+
 # Create credentials.txt file
 cat <<EOF > secrets/credentials.txt
 USER=$USER
