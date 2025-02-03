@@ -62,7 +62,7 @@ services:
       - ${NGINX_PORT}
     healthcheck:
       test:
-        ["CMD", "curl", "-fk", "https://${DOMAIN_NAME}/healthcheck.html"]
+        ["CMD", "curl", "-fk", "https://${DOMAIN_NAME}/site-health.php"]
       interval: 10s
       timeout: 5s
       retries: 5

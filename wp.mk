@@ -39,9 +39,8 @@ ng-ping-maria:
 	docker exec nginx mysqladmin ping -h"$$MYSQL_HOST" -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD"
 ngself:
 	docker exec nginx curl -kf https://localhost:443/healthcheck.html
-	@echo
-	docker exec nginx curl -kf https://lilizarr.42.fr/healthcheck.html
-	docker exec nginx curl -kf https://lilizarr.42.fr/site-health.php
+	docker exec nginx curl -kf https://localhost:443/site-health.php
+
 clean-nginx-cache:
 	@echo "Cleaning Docker cache for Nginx..."
 	@docker image rm nginx:latest || true
