@@ -1,5 +1,6 @@
 #!/bin/bash
 set -x
+
 if [ -f /run/secrets/credentials ]; then
 	while IFS='=' read -r key value; do
 		if [[ ! $key =~ ^# && -n $key ]]; then
@@ -8,6 +9,7 @@ if [ -f /run/secrets/credentials ]; then
 			export "$key=$(echo "$value" | sed 's/^"\(.*\)"$/\1/')"
 		fi
 	done < /run/secrets/credentials
+	echo "############## CREDENTIALS LOADED ####################"
 else
 	echo "Error: /run/secrets/credentials file not found."
 	exit 1
@@ -16,7 +18,6 @@ fi
 
 # env > /credentials
 # Load secrets
-echo -e "##################################" 
 
 cd /var/www/html
 
@@ -50,7 +51,7 @@ fi
 	
 echo -e "##################################"
 echo "Installing WordPress..."
-echo -e "##################################"
+echo 
 
 if ! wp core install --url="https://$DOMAIN_NAME" --title="$WORDPRESS_TITLE" --admin_user="$WORDPRESS_ADMIN_USER" --admin_password="$WORDPRESS_ADMIN_PASSWORD" --admin_email="$WORDPRESS_ADMIN_EMAIL" --allow-root --debug; then
 	echo "Error: Failed to install WordPress"
@@ -68,7 +69,6 @@ if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
 	fi
 	find /var/www/html -type d -exec chmod 755 {} \; && \
 	find /var/www/html -type f -exec chmod 644 {} \;
-	# wp config set ALLOW_UNFILTERED_UPLOADS true --raw --allow-root
 
 	# echo "Replacing 'http://example.com' by 'https://example.com' within the WordPress database"
 	wp search-replace "http://$DOMAIN_NAME" "https://$DOMAIN_NAME" --allow-root
@@ -172,7 +172,7 @@ if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
 	rm -rf /tmp/*.jpg
 	echo "Profile picture set for user ID $USER_ID"
 	TITLE="Puerto Escondido, MX"
-	FOOTER='<div class="text-center"><img src="'$AVATAR_URL'" class="rounded-circle" alt="Avatar" /><br />"'$WORDPRESS_ADMIN_USER'"</div>'
+	FOOTER='<div class="text-center"><img src="'$AVATAR_URL'" class="rounded-circle" alt="Avatar" /><br />"'$WORDPRESS_USER'"</div>'
 	wp term create category Blog --allow-root
 	BLOG=$(wp term list category --name=Blog --field=term_id --allow-root)
 	POST_ID=$(wp post create --post_title="$TITLE" --post_status=publish --post_content="$POST_CONTENT" --post_excerpt="$FOOTER" --post_author="$USER_ID" --post_category="$BLOG" --allow-root --porcelain)

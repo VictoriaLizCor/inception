@@ -6,6 +6,7 @@ secrets/
 .vscode 
 build.log
 *.log
+srcs/*.log
 srcs/requirements/nginx/conf/ssl/fullchain.crt
 srcs/requirements/nginx/conf/ssl/privkey.key
 srcs/requirements/nginx/conf/ssl/

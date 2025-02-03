@@ -163,6 +163,7 @@ clean: #remove-nginx remove-wordpress remove-mariadb
 	@printf "\n$(LF)🧹 $(P_RED) Clean $(P_GREEN) $(CURRENT)\n"
 	@printf "$(LF)\n  $(P_RED)❗  Removing $(FG_TEXT)"
 	@$(MAKE) --no-print stop down
+	@rm -rf srcs/*.log
 
 fclean: clean remove_containers remove_images remove_volumes prune remove_networks rm-secrets
 	-@if [ -d "$(VOLUMES)" ]; then	\
@@ -186,8 +187,9 @@ secrets: check_host
 	@$(call createDir,./secrets)
 	@chmod +x generateSecrets.sh
 	@echo $(WHITE)
-	@export $(shell grep '^TMP' srcs/.env.tmp | xargs) && \
-	bash generateSecrets.sh $$TMP
+# @export $(shell grep '^TMP' srcs/.env.tmp | xargs) && \
+	bash generateSecrets.sh $$TMP #for testing
+	@bash generateSecrets.sh
 	@echo $(E_NC) > /dev/null
 
 showData:

@@ -80,7 +80,6 @@ services:
       - wp-vol:/var/www/html
     networks:
       - ${NETWORK_NAME}
-    #   - private
     healthcheck:
       test: ["CMD", "nc", "-zv", "${NGINX_DNS}", "${WORDPRESS_PORT}"]
       interval: 10s
@@ -118,7 +117,6 @@ services:
       - db-vol:/var/lib/mysql
     networks:
       - ${NETWORK_NAME}
-    #   - private
     restart: unless-stopped
     stdin_open: true
     tty: true

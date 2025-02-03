@@ -5,8 +5,8 @@ if [ -f srcs/.env ]; then
 fi
 # Prompt for the decryption key
 echo 
-# read -sp "Enter decryption key:" DECRYPTION_KEY # uncomment
-DECRYPTION_KEY="$1" # to be deleted
+read -sp "Enter decryption key:" DECRYPTION_KEY # uncomment
+# DECRYPTION_KEY="$1" # to be deleted
 # Decrypt the .env file
 if [ -f .tmp.enc ]; then
 	gpg --batch --passphrase "$DECRYPTION_KEY" -o .tmp.tar.gz -d .tmp.enc
