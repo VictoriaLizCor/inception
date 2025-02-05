@@ -15,7 +15,7 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 # Create necessary directories and set permissions
 RUN mkdir -p /run/php /var/www/html && \
 	chown -R www-data:www-data /var/www/html && \
-	chmod -R 755 /var/www/html
+	chmod -R 777 /var/www/html
 
 # Copy configuration files
 COPY ./conf/www.cnf /etc/php/7.4/fpm/pool.d/www.conf
@@ -24,6 +24,14 @@ COPY ./conf/site-health.php /var/www/html/
 
 # Make the wp_install.sh script executable
 RUN chmod +x /usr/bin/wp_install.sh
+
+# Create a non-root user
+RUN useradd -m lilizarr
+
+# Switch to the non-root user
+USER lilizarr
+
+
 
 # Expose the PHP-FPM port
 EXPOSE 9000

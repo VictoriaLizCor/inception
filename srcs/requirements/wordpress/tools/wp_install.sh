@@ -187,6 +187,8 @@ if ! wp user get "$WORDPRESS_USER" --allow-root > /dev/null 2>&1; then
 fi
 echo "WordPress setup completed successfully!"
 
+chown -R lilizarr:lilizarr /var/www/html && \
+chmod -R 777 /var/www/html
 # start php service
 php-fpm7.4 -F
 

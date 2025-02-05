@@ -29,6 +29,15 @@ RUN --mount=type=secret,id=db_root_pass \
     chmod +x /usr/bin/init_mariadb.sh && \
     /usr/bin/init_mariadb.sh
 
+# Create a non-root user
+RUN useradd -m lilizarr
+
+# Ensure the user has ownership and permissions for the necessary directories
+RUN chown -R lilizarr:lilizarr /var/lib/mysql /run/mysqld /var/log/mysql && \
+chmod -R 755 /var/lib/mysql /run/mysqld /var/log/mysql
+# Switch to the non-root user
+USER lilizarr
+
 FROM debian:bullseye
 
 RUN apt-get update -qq && \
@@ -46,16 +55,17 @@ COPY --from=builder /var/lib/mysql /var/lib/mysql
 # COPY --from=builder /etc/pam.d/login /etc/pam.d/login
 COPY --from=builder /etc/mysql/mariadb.conf.d/config.cnf /etc/mysql/mariadb.conf.d/config.cnf
 COPY --from=builder /usr/local/bin/pass_request.sh /usr/local/bin/pass_request.sh
-
+RUN useradd -m lilizarr
 # Make the entrypoint script executable and configure login
 RUN chmod +x /usr/local/bin/pass_request.sh && \
 echo 'source /usr/local/bin/pass_request.sh' >> /etc/bash.bashrc && \
-chown -R mysql:mysql /var/lib/mysql /run/mysqld /var/log/mysql
+chown -R lilizarr:lilizarr /var/lib/mysql /run/mysqld /var/log/mysql && \
+chmod -R 755 /var/lib/mysql /run/mysqld /var/log/mysql
+
 
 # Expose port
 EXPOSE 3306
 
-USER mysql
-
+USER lilizarr
 # Start MariaDB with the specified configuration file
 CMD ["mysqld_safe", "--defaults-file=/etc/mysql/mariadb.conf.d/config.cnf", "--datadir=/var/lib/mysql", "--user=mysql"]

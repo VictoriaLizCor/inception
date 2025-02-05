@@ -160,9 +160,10 @@ define createDir
 		printf "$(LF)  🟢 $(P_BLUE)Directory $(P_YELLOW)$(1) $(P_BLUE)already exists$(FG_TEXT)"; \
 	else \
 		mkdir -p $(1); \
-		chmod u+rwx $(1); \
+		chmod 755 $(1); \
 		printf "$(LF)  🟢  $(P_BLUE)Successfully created directory $(P_GREEN)$(1) $(P_BLUE)! $(FG_TEXT)"; \
 	fi
+	@echo
 endef
 
 #--------------------COLORS----------------------------#
