@@ -117,6 +117,7 @@ services:
       - db-vol:/var/lib/mysql
     networks:
       - ${NETWORK_NAME}
+    user: "${UID}:${GID}"
     restart: unless-stopped
     stdin_open: true
     tty: true

@@ -153,9 +153,9 @@ remove_volumes:
 	@printf "$(LF)$(P_RED)  ❗  Removing $(P_YELLOW)Volumes $(FG_TEXT)"
 	@if [ -n "$$(docker volume ls -q)" ]; then \
 		docker volume rm $$(docker volume ls -q) > /dev/null; \
-		docker run --rm -v /home/lilizarr/data:/data --privileged -it alpine sh -c 'rm -rf /data/*' > /dev/null 2>&1 ; \
 	fi
 	@rm -rf $(VOLUMES)
+#docker run --rm -v /home/lilizarr/data:/data --privileged -it alpine sh -c 'rm -rf /data/*' > /dev/null 2>&1 ; \;
 
 remove_networks:
 	@printf "$(LF)$(P_RED)  ❗  Removing $(P_YELLOW)networks $(FG_TEXT)"
