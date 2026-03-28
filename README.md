@@ -1,6 +1,6 @@
 # Inception (Docker) — Nginx + WordPress + MariaDB
 
-This project is a classic **Docker-based system administration** exercise: it provisions a small web stack using **Docker Compose** with:
+This project provisions a small **Docker Compose** web stack with:
 
 - **Nginx** (TLS/HTTPS reverse proxy)
 - **WordPress** (PHP-FPM + WP-CLI auto-install)
@@ -23,7 +23,7 @@ The repository includes a `Makefile` that automates volume creation, secrets gen
 ## Repository structure
 
 - `Makefile` — main entrypoint for building/running
-- `srcs/docker-compose.yml` — Compose definition (nginx / wordpress / mariadb)
+- `srcs/docker-compose.yml` — Compose definition (`nginx` / `wordpress` / `mariadb`)
 - `srcs/requirements/` — Dockerfiles and configs:
   - `nginx/`
   - `wordpress/`
@@ -35,12 +35,12 @@ The repository includes a `Makefile` that automates volume creation, secrets gen
 
 ## Prerequisites
 
-- Linux environment (the make targets include checks for **Debian 11 bullseye** in some flows)
+- Linux environment (some make targets check for **Debian 11 (bullseye)**)
 - `docker` and `docker compose`
 - `gpg` (used by `generateSecrets.sh` to decrypt `.tmp.enc`)
 - `make`
 
-> Note: some Make targets modify `/etc/hosts` (via sudo) to map `127.0.0.1 ${USER}.42.fr`.
+> Some Make targets modify `/etc/hosts` (via sudo) to map `127.0.0.1 ${USER}.42.fr`.
 
 ---
 
@@ -52,7 +52,7 @@ From the repository root:
 make
 ```
 
-`make` runs the default target:
+`make` runs the default target which:
 
 - creates bind-mount volume directories under `~/data`
 - generates secrets + `.env` (prompts for a GPG decryption key)
@@ -65,6 +65,7 @@ make
 ## How secrets and env work
 
 ### What gets created
+
 Running `make secrets` (or `make`, which depends on it) will:
 
 - create a `secrets/` directory
@@ -77,6 +78,7 @@ Running `make secrets` (or `make`, which depends on it) will:
   - `secrets/credentials.txt` (WordPress & DB configuration)
 
 ### Why you are prompted for a key
+
 `generateSecrets.sh` decrypts `.tmp.enc` using `gpg` and asks:
 
 ```
@@ -90,6 +92,7 @@ If decryption fails, it exits with an error.
 ## Services overview (docker-compose)
 
 ### Volumes (bind mounts)
+
 Compose defines two bind-mounted volumes (paths come from `.env`):
 
 - `db-vol` → `${MARIADB_VOLUME}` mounted at `/var/lib/mysql`
@@ -101,122 +104,57 @@ The `Makefile` prepares defaults under:
 - `~/data/wordpress`
 
 ### Network
+
 Custom bridge network name is taken from `${NETWORK_NAME}`.
 
 ### Nginx
+
 - Listens on **443** with TLS
 - Uses Docker secrets for:
   - `ssl_key` → `/run/secrets/ssl_key`
   - `ssl_cert` → `/run/secrets/ssl_cert`
 - Proxies PHP requests to `wordpress:9000`
-- Has a healthcheck hitting: `https://${DOMAIN_NAME}/site-health.php`
+- Healthcheck: `https://${DOMAIN_NAME}/site-health.php`
 
 ### WordPress
+
 - Runs PHP-FPM 7.4
-- Uses WP-CLI to:
+- Uses WP-CLI (via `wp_install.sh`) to:
   - download/configure WordPress
   - install core
   - create an extra user
-  - update rewrite rules / options
-  - install theme/plugins (as scripted)
-- Uses `credentials` secret at `/run/secrets/credentials`
+  - set permalinks + basic options
+  - install a theme/plugins (as scripted)
+- Exposes port **9000** (internal)
 
 ### MariaDB
-- Uses secrets:
-  - root password
-  - user password
-- Initializes DB using an SQL template and startup script in the image build stage.
+
+- MariaDB server **10.5**
+- Uses Docker secrets for root/user passwords
+- Initializes the database via `init_mariadb.sh` and `init.sql`
+- Exposes port **${DB_PORT}** (from `.env`)
 
 ---
 
-## Common Make targets
+## Useful make targets
 
-### Main lifecycle
 - `make` / `make all` — build + up + show
-- `make run` — build/start in sequence (mariadb → wordpress → nginx)
-- `make up` — `docker compose up -d`
-- `make down` — `docker compose down -v --rmi local`
-- `make stop` — stop containers
-
-### Cleaning
-- `make clean` — stop/down and remove logs
-- `make fclean` — aggressive cleanup (containers/images/volumes/networks + remove secrets)
-
-### Individual services
-- `make build-nginx` / `make up-nginx` / `make run-nginx`
-- `make build-wordpress` / `make up-wordpress` / `make run-wordpress`
-- `make build-mariadb` / `make up-mariadb` / `make run-mariadb`
-
-### Diagnostics helpers
-- `make show` / `make showAll` — list containers/images/volumes/networks
-- `make wplog` / `make nglog` / `make logm` — logs
-- `make ngbash` / `make twp` / `make mdb` / `make rmdb` — shell into containers
-
----
-
-## Accessing the site
-
-This project typically maps a host like:
-
-- `${USER}.42.fr`
-
-The Makefile includes a helper that adds to `/etc/hosts`:
-
-```
-127.0.0.1 ${USER}.42.fr
-```
-
-Once containers are healthy, open:
-
-- `https://<DOMAIN_NAME>/`
-
-(Your `DOMAIN_NAME` is provided by the decrypted `.env` / generated `credentials.txt`.)
+- `make run` — start services sequentially (mariadb → wordpress → nginx)
+- `make up` / `make down` — compose up/down
+- `make clean` / `make fclean` — cleanup (⚠️ `fclean` removes volumes + secrets)
+- `make nglog` / `make wplog` / `make logm` — logs
+- `make ngbash` / `make twp` / `make mdb` — shell into containers
 
 ---
 
 ## Troubleshooting
 
-### 1) Secrets / .env not created
-- Run: `make secrets`
-- Ensure `gpg` is installed
-- Use the correct decryption key for `.tmp.enc`
-
-### 2) Containers stuck unhealthy
-Check health and logs:
-
-```bash
-make showAll
-make nglog
-make wplog
-make logm
-```
-
-### 3) Volume permission issues
-This setup uses bind mounts under `~/data`. If ownership/permissions get messy:
-
-```bash
-make fclean
-make
-```
-
-(Warning: `fclean` removes volumes and secrets.)
-
-### 4) Hostname not resolving
-If `https://<DOMAIN_NAME>` doesn’t resolve, ensure `/etc/hosts` contains the mapping to `127.0.0.1`.
+- **Secrets/.env not created:** run `make secrets` and ensure you have the correct GPG key for `.tmp.enc`.
+- **Hostname not resolving:** ensure `/etc/hosts` contains `127.0.0.1 ${USER}.42.fr` (or run the make target that adds it).
+- **Unhealthy containers:** check logs (`make nglog`, `make wplog`, `make logm`) and healthchecks.
 
 ---
 
-## Documentation
+## Security note
 
-See `docs/`:
-- `docs/Docker.MD`
-- `docs/Steps.MD`
-- `docs/secrets.MD`
-- `docs/mariadb.MD`
-- `docs/en.subject.pdf`
-
----
-
-## Disclaimer
-
-This repository generates and uses secrets locally. Do **not** commit real secrets. Treat `secrets/` and `srcs/.env` as sensitive.
+This repo generates and uses secrets locally. Do **not** commit real secrets. Treat `secrets/` and `srcs/.env` as sensitive.
